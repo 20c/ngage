@@ -1,33 +1,23 @@
+from __future__ import print_function
 
 import click
-from ncclient import manager
-from ncclient.xml_ import *
-
-from jnpr.junos import Device
-from jnpr.junos.utils.config import Config
-from jnpr.junos.exception import ConfigLoadError, ConnectAuthError
-
 import getpass
-import lxml
+import os
 import sys
 
+from ngage.exceptions import AuthenticationError
+from ngage.plugins.eznc import EzncDriver as Driver
 
-def read_files(files):
-    read = list()
-    for each in files:
-        with open(each) as fobj:
-            read.append({'file': file, 'data': fobj.read()})
-    return read
 
-def connect(host, port, user, password=None):
-# https://github.com/Juniper/py-junos-eznc/blob/master/lib/jnpr/junos/utils/config.py
+def connect(kwargs):
     try:
-        jdev = Device(host, port='22', user=user, password=password)
-        jdev.open()
-        jdev.bind(cu=Config)
-        return jdev
+        # get connect specific options and remove them from kwargs
+        config = get_connect_config(kwargs)
+        drv = Driver(config)
+        drv.open()
+        return drv
 
-    except ConnectAuthError as e:
+    except AuthenticationError as e:
         if not password:
             password = click.prompt('password', hide_input=True)
             if password:
@@ -35,159 +25,149 @@ def connect(host, port, user, password=None):
         raise
 
 
-# commands : rollback, commit, show-diff-ask-commit
-# diff, diff group of hosts, return value if they're different
-
-@click.group()
-@click.version_option()
-@click.pass_context
-#@click.argument('host', nargs=1)
-def cli(ctx):
-    pass
-#    ctx.dev = connect(host, port=port, user=user)
+def common_options(f):
+    f = click.version_option(f)
+    return f
 
 
-def host_options(f):
+def connect_options(f):
     f = click.argument('host', nargs=1)(f)
+    f = click.option('--port', help='port to connect to, default per platform')(f)
     f = click.option('--user', help='username', envvar='NGAGE_USER',
                      default=getpass.getuser())(f)
-    f = click.option('--password')(f)
-    f = click.option('--port', default=22)(f)
-    return f
-
-def commit_options(f):
-    f = click.option('--check/--no-check', help='dry run (load, commit check, rollback)', default=False)(f)
-    f = click.option('--diff/--no-diff', help='show diff of changes', default=False)(f)
-
-#  at                   Time at which to activate configuration changes
-#  check                Check correctness of syntax; do not apply changes
-#  comment              Message to write to commit log
-#  confirmed            Automatically rollback if not confirmed
-#  scripts              Push scripts to other RE
-#  synchronize          Synchronize commit on both Routing Engines
+    f = click.option('--password', help='password to use if not using key auth')(f)
     return f
 
 
-def get_commit_kwargs(args):
-    copy_keys = (
-        'check',
-        'diff',
+def get_connect_config(kwargs):
+    keys = (
+        'host',
+        'port',
+        'user',
+        'password',
         )
-    ci_kwargs = {k: args[k] for k in copy_keys}
-    return ci_kwargs
+    return {k: kwargs.pop(k, None) for k in keys}
 
 
-def do_commit(jdev, **kwargs):
+@click.group()
+#@common_options
+@click.version_option()
+@click.pass_context
+def cli(ctx):
+    pass
+
+
+@cli.command()
+@click.pass_context
+@connect_options
+@click.option('--check/--no-check', help='check config but do not do actual commit', default=False)
+@click.option('--diff/--no-diff', help='show diff of changes', default=False)
+def commit(ctx, **kwargs):
+    dev = connect(kwargs)
+
     if kwargs['diff']:
-        print jdev.cu.diff()
+        print(dev.diff())
 
     if kwargs['check']:
-        jdev.cu.commit_check()
-
-#print "committing %s..." % (host,)
-    jdev.cu.commit()
-
-
-@cli.command()
-@click.pass_context
-@host_options
-@commit_options
-def commit(ctx, host, port, user, password, **kwargs):
-    jdev = connect(host, port, user, password)
-    do_commit(jdev, **get_commit_kwargs(kwargs))
+        dev.check()
+    else:
+        dev.commit()
 
 
 @cli.command()
 @click.pass_context
-@host_options
-@click.option('--rollback', help='rollback index', default=0)
-def diff(ctx, host, port, user, password, rollback):
-    jdev = connect(host, port, user, password)
-    diff = jdev.cu.diff(rollback)
-    if diff:
-        print diff
-
-
-@cli.command()
-@click.pass_context
-@host_options
-# TODO positional?
+@connect_options
 @click.option('--index', help='rollback index', default=0)
-def rollback(ctx, host, port, user, password, index):
-    jdev = connect(host, port, user, password)
-    jdev.cu.rollback(index)
+def diff(ctx, **kwargs):
+    dev = connect(kwargs)
+    diff = dev.diff(**kwargs)
+    print(diff)
 
 
-# TODO save to file or stdout
 @cli.command()
 @click.pass_context
-@host_options
-def save(ctx, host, port, user, password):
-    jdev = connect(host, port, user, password)
-    options = {
-        'format': 'text'
-    }
-    config = jdev.rpc.get_config(filter_xml=None, options=options)
-    with open(host, "w") as fobj:
-        print config.text
-        fobj.write(config.text.encode('ascii', 'replace'))
+@connect_options
+@click.option('--index', help='rollback index', default=0)
+def rollback(ctx, **kwargs):
+    dev = connect(kwargs)
+    dev.rollback(**kwargs)
 
 
-## TODO lock option, check for uncommitted changes before commit
 @cli.command()
-# TODO - separate check from rollback?
-@click.option('--check/--no-check', help='dry run (load, commit check, rollback)', default=False)
-@click.option('--commit/--no-commit', help='commit changes',
-    default=True)
-@click.option('--diff/--no-diff', help='show diff of changes', default=False)
-@host_options
-@click.argument('files', nargs=-1)
-# verbose / interactive
-# atomic
-def push(host, files, user, password, check, commit, diff, port):
-#    host = sys.argv[1]
-    print user, host, files
-#        nc_commit(host, user, config)
+@click.pass_context
+@connect_options
+@click.option('--output-dir', help='directory to save file to, will be named from filename option', default='.')
+@click.argument('filename', default='-')
+def pull(ctx, filename, **kwargs):
+    # set filename before kwargs get mangled
+    if filename != '-':
+        filename = filename.format(**kwargs)
+        filename = os.path.join(kwargs['output_dir'], filename)
 
-    jdev = connect(host, port, user, password)
+    dev = connect(kwargs)
+    config = dev.pull(**kwargs)
+
+    with click.open_file(filename, 'w') as fobj:
+        fobj.write(config)
+
+
+@cli.command()
+@click.pass_context
+@connect_options
+@click.option('--check/--no-check', help='commit check config', default=True)
+@click.option('--commit/--no-commit', help='commit changes', default=False)
+@click.option('--diff/--no-diff', help='show diff of changes', default=False)
+@click.option('--lock/--no-lock', help='lock config for exclusive access', default=True)
+@click.option('--rollback/--no-rollback', help='rollback changes after push', default=False)
+@click.argument('files', nargs=-1)
+def push(ctx, files, **kwargs):
+    dev = connect(kwargs)
 
     try:
-        # need with style for the lock
-#        rsp = jdev.cu.lock()
+        check = kwargs['check']
+        commit = kwargs['commit']
+        diff = kwargs['diff']
+        lock = kwargs['lock']
+        rollback = kwargs['rollback']
 
-        for each in files:
-            print "loading %s..." % (each,)
-            try:
-                res = jdev.cu.load(path=each, format='text')
-            # bogus exception on warnings
-            except ConfigLoadError as e:
-                # ConfigLoadError(severity: error, bad_element: policer, message: syntax error)
-                # print e
-                if not e.errs['severity']:
-                    pass
+        if rollback and commit:
+            print("cannot have both commit and rollback")
+            return 1
 
-            if diff:
-                print jdev.cu.diff()
+        if lock:
+            dev.lock()
 
-            print "checking %s..." % (each,)
-            # TODO - rpc timeout if commit check and then commit
-            #jdev.cu.commit_check()
+        # nested try to allow for rollback on push errors
+        try:
+            for each in files:
+                print("pushing %s" % (each,))
+                dev.push(each)
+                if diff:
+                    print(dev.diff())
 
-        if check:
-            jdev.cu.rollback()
+                dev.check()
+                if check:
+                    dev.check()
+
+        except Exception as e:
+            if rollback:
+                dev.rollback()
+            raise
+
+        if rollback:
+            print("rollback %s" % (dev.host,))
+            dev.rollback()
+
         elif commit:
-            # throws on warnings / errors
-            #jdev.cu.commit_check()
-            print "committing %s..." % (host,)
-            jdev.cu.commit()
+            print("committing %s" % (dev.host,))
+            dev.commit()
 
     except Exception as e:
-        print "push error", e
-        print jdev.cu.diff()
-        jdev.cu.rollback()
-#        jdev.cu.unlock()
+        print("push error", e)
+        print(dev.diff())
+        raise
 
-
-#    jdev.cu.rollback()
-#    jdev.cu.unlock()
+    finally:
+        if lock:
+            dev.unlock()
 
