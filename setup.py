@@ -10,26 +10,23 @@ setup(
     version=version,
     author='20C',
     author_email='code@20c.com',
-    description='',
-    long_description=open('README.txt').read(),
+    description='network device config twirler',
+    long_description='',
     classifiers=[
         'Development Status :: 4 - Beta',
     ],
 
-    packages=[
-        'ngage',
-    ],
+    packages=find_packages(),
+    include_package_data=True,
 
     install_requires=requirements,
     test_requires=test_requirements,
 
-    entry_points='''
-        [console_scripts]
-        ngage=ngage.cli:cli
-    ''',
-
-#    packages=['uixauto'],
-#    namespace_packages=['twentyc'],
+    entry_points={
+        'console_scripts': [
+            'ngage=ngage.cli:cli',
+        ]
+    },
 
     zip_safe=True,
 )
