@@ -19,11 +19,10 @@ def connect(kwargs):
         drv.open()
         return drv
 
-    except AuthenticationError as e:
-        if not password:
-            password = click.prompt('password', hide_input=True)
-            if password:
-                return connect(host, port, user, password)
+    except AuthenticationError:
+        config['password'] = click.prompt('password', hide_input=True)
+        if config['password']:
+            return connect(config)
         raise
 
 def make_get_options(*keys):

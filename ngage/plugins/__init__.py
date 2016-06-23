@@ -33,7 +33,7 @@ class DriverPlugin(PluginBase):
 
             self.log.debug(func)
             return getattr(self, call)(**kwargs)
-        except NotImplementedError as e:
+        except NotImplementedError:
             if self.strict:
                 raise
 
@@ -68,7 +68,7 @@ class DriverPlugin(PluginBase):
 
     def push(self, fname, **kwargs):
         """ push config from device """
-        self.log.debug("push %s..." % (fname,))
+        self.log.debug("push %s...", fname)
         self._do_push(fname, **kwargs)
 
     def diff(self, **kwargs):
@@ -104,11 +104,11 @@ class DriverPlugin(PluginBase):
         """ internal method to pull a config file from a device """
         raise NotImplementedError
 
-    def _do_push(self):
+    def _do_push(self, fname, **kwawgs):
         """ internal method to push a single config file to a device """
         raise NotImplementedError
 
-    def _do_diff(self):
+    def _do_diff(self, index=0):
         raise NotImplementedError
 
     def _do_check(self):
@@ -117,6 +117,6 @@ class DriverPlugin(PluginBase):
     def _do_commit(self):
         raise NotImplementedError
 
-    def _do_rollback(self):
+    def _do_rollback(self, index=0):
         raise NotImplementedError
 

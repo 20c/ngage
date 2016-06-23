@@ -1,4 +1,4 @@
-#from __future__ import absolute_import
+from __future__ import absolute_import
 
 import ngage
 from ngage.exceptions import AuthenticationError
@@ -27,7 +27,7 @@ class EzncDriver(ngage.plugins.DriverPlugin):
             self.dev.open()
             self.dev.bind(cu=Config)
 
-        except ConnectAuthError as e:
+        except ConnectAuthError:
             raise AuthenticationError
 
     def _do_close(self):
