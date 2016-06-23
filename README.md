@@ -7,7 +7,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/20c/ngage/master.svg?maxAge=2592000)](https://codecov.io/github/20c/ngage)
 [![Requires.io](https://img.shields.io/requires/github/20c/ngage.svg?maxAge=2592000)](https://requires.io/github/20c/ngage/requirements)
 
-router config twirler
+network gadget config twirler
 
 
 ## Synopsis
