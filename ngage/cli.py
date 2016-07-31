@@ -263,7 +263,7 @@ def push(ctx, files, **kwargs):
             dev.commit()
 
     except Exception as e:
-        ctx.print("push error", e)
+        ctx.print("push error %s", e)
         ctx.vprint(dev.diff())
         raise
 

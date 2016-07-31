@@ -49,8 +49,10 @@ class EzncDriver(ngage.plugins.DriverPlugin):
         # bogus exception on warnings
         except ConfigLoadError as e:
             # skip warnings
-            if not e.errs['severity']:
-                pass
+            for err in e.errs:
+                if not err['severity'] or err['severity'] == 'warning':
+                    continue
+                raise
 
     def _do_diff(self, index=0):
         return self.dev.cu.diff(index)
