@@ -6,7 +6,7 @@
 With output variable set to where you want it to go, for example
 ```
 generated_config_dir: gen
-config_output_dir: "{{config_output_dir}}/{{inventory_hostname}}"
+config_output_dir: "{{generated_config_dir}}/{{inventory_hostname}}"
 ```
 
 ```
