@@ -8,6 +8,7 @@ from jnpr.junos.utils.config import Config
 from jnpr.junos.exception import ConfigLoadError, ConnectAuthError
 
 
+@ngage.plugin.register('eznc')
 class EzncDriver(ngage.plugins.DriverPlugin):
     plugin_type = 'eznc'
 

@@ -6,16 +6,17 @@ import getpass
 import os
 import sys
 
+import ngage
 from ngage.config import Config
 from ngage.exceptions import AuthenticationError
-from ngage.plugins.eznc import EzncDriver as Driver
 
 
 def connect(kwargs):
     try:
         # get connect specific options and remove them from kwargs
         config = get_connect_options(kwargs)
-        drv = Driver(config)
+        cls = ngage.plugin.get_plugin_class(config['type'])
+        drv = cls(config)
         drv.open()
         return drv
 
@@ -46,13 +47,14 @@ get_common_options = make_get_options('debug', 'home', 'verbose')
 def connect_options(f):
     f = click.argument('host', nargs=1)(f)
     f = click.option('--port', help='port to connect to, default per platform')(f)
+    f = click.option('--type', help='type of connection, default eznc', default='eznc')(f)
     f = click.option('--user', help='username', envvar='NGAGE_USER',
                      default=getpass.getuser())(f)
     f = click.option('--password', help='password to use if not using key auth')(f)
     return f
 
 
-get_connect_options = make_get_options('host', 'port', 'user', 'password')
+get_connect_options = make_get_options('host', 'port', 'type', 'user', 'password')
 
 
 class Context(object):
