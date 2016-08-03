@@ -32,18 +32,6 @@ def make_get_options(*keys):
     return getter
 
 
-# all levels of commands will use/process these
-def common_options(f):
-    f = click.version_option()(f)
-    f = click.option('--debug', help='enable extra debug output', is_flag=True, default=None)(f)
-    f = click.option('--home', help='by default will check in order: $NGAGE_HOME, ./.ngage, OS application dir', envvar='NGAGE_HOME', default=None)(f)
-    f = click.option('--verbose', help='enable more verbose output', is_flag=True, default=None)(f)
-    return f
-
-
-get_common_options = make_get_options('debug', 'home', 'verbose')
-
-
 def connect_options(f):
     f = click.argument('host', nargs=1)(f)
     f = click.option('--port', help='port to connect to, default per platform')(f)
@@ -58,6 +46,24 @@ get_connect_options = make_get_options('host', 'port', 'type', 'user', 'password
 
 
 class Context(object):
+    # all levels of commands will use/process these
+    @classmethod
+    def options(cls, f):
+        f = click.version_option()(f)
+        f = click.option('--debug', help='enable extra debug output', is_flag=True, default=None)(f)
+        f = click.option('--home', help='by default will check in order: $NGAGE_HOME, ./.ngage, ' + click.get_app_dir('ngage'), envvar='NGAGE_HOME', default=None)(f)
+        f = click.option('--verbose', help='enable more verbose output', is_flag=True, default=None)(f)
+        return f
+
+    @classmethod
+    def get_options(cls, kwargs):
+        keys = ('debug', 'home', 'verbose')
+        return {k: kwargs.pop(k, None) for k in keys}
+
+    @classmethod
+    def pass_context(cls):
+        return click.make_pass_decorator(cls, ensure=True)
+
     def __init__(self, **kwargs):
         self.debug = False
         self.quiet = False
@@ -69,7 +75,7 @@ class Context(object):
         self.update_options(kwargs)
 
     def update_options(self, kwargs):
-        opt = get_common_options(kwargs)
+        opt = self.__class__.get_options(kwargs)
 
         if opt.get('debug', None) is not None:
             self.debug = opt['debug']
@@ -110,19 +116,17 @@ class Context(object):
         if self.debug:
             self.msg(msg, *args)
 
-pass_context = click.make_pass_decorator(Context, ensure=True)
-
 
 @click.group()
+@Context.pass_context()
 #@common_options
-@pass_context
 def cli(ctx, **kwargs):
     ctx.update_options(kwargs)
 
 
 @cli.command()
-@pass_context
-@common_options
+@Context.pass_context()
+@Context.options
 @click.option('--write', help='write config, if home is not specified, uses cwd', is_flag=True, default=False)
 def config(ctx, **kwargs):
     """ view and interact with the config """
@@ -145,7 +149,7 @@ def config(ctx, **kwargs):
 
 
 @cli.command()
-@click.pass_context
+@Context.pass_context()
 @connect_options
 @click.option('--check/--no-check', help='check config but do not do actual commit', default=False)
 @click.option('--diff/--no-diff', help='show diff of changes', default=False)
@@ -164,7 +168,7 @@ def commit(ctx, **kwargs):
 
 
 @cli.command()
-@click.pass_context
+@Context.pass_context()
 @connect_options
 @click.option('--index', help='rollback index', default=0)
 def diff(ctx, **kwargs):
@@ -177,7 +181,7 @@ def diff(ctx, **kwargs):
 
 
 @cli.command()
-@click.pass_context
+@Context.pass_context()
 @connect_options
 @click.option('--index', help='rollback index', default=0)
 def rollback(ctx, **kwargs):
@@ -189,8 +193,8 @@ def rollback(ctx, **kwargs):
 
 
 @cli.command()
-@click.pass_context
-@common_options
+@Context.pass_context()
+@Context.options
 @connect_options
 @click.option('--output-dir', help='directory to save file to, will be named from filename option', default='.')
 @click.argument('filename', default='-')
@@ -211,7 +215,8 @@ def pull(ctx, filename, **kwargs):
 
 
 @cli.command()
-@common_options
+@Context.pass_context()
+@Context.options
 @connect_options
 @click.option('--check/--no-check', help='commit check config', default=True)
 @click.option('--commit/--no-commit', help='commit changes', default=False)
@@ -219,7 +224,6 @@ def pull(ctx, filename, **kwargs):
 @click.option('--lock/--no-lock', help='lock config for exclusive access', default=True)
 @click.option('--rollback/--no-rollback', help='rollback changes after push', default=False)
 @click.argument('files', nargs=-1)
-@pass_context
 def push(ctx, files, **kwargs):
     """ push config to a device """
     ctx.update_options(kwargs)
