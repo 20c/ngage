@@ -3,12 +3,14 @@ from __future__ import print_function
 
 import click
 import getpass
+import logging
 import os
 import sys
 
 import ngage
 from ngage.config import Config
 from ngage.exceptions import AuthenticationError
+import munge.click
 
 
 def connect(kwargs):
@@ -45,83 +47,32 @@ def connect_options(f):
 get_connect_options = make_get_options('host', 'port', 'type', 'user', 'password')
 
 
-class Context(object):
-    # all levels of commands will use/process these
-    @classmethod
-    def options(cls, f):
-        f = click.version_option()(f)
-        f = click.option('--debug', help='enable extra debug output', is_flag=True, default=None)(f)
-        f = click.option('--home', help='by default will check in order: $NGAGE_HOME, ./.ngage, ' + click.get_app_dir('ngage'), envvar='NGAGE_HOME', default=None)(f)
-        f = click.option('--verbose', help='enable more verbose output', is_flag=True, default=None)(f)
-        return f
+def update_context(ctx, kwargs):
+    """ updates context from current command line args, then reinits """
+    ctx.update_options(kwargs)
 
-    @classmethod
-    def get_options(cls, kwargs):
-        keys = ('debug', 'home', 'verbose')
-        return {k: kwargs.pop(k, None) for k in keys}
+    if not isinstance(ctx.config['ngage']['plugin_path'], list):
+        raise ValueError('config item ngage.plugin_path must be a list')
+    # set plugin search path to defined + $home/plugins
+    ngage.plugin.searchpath = ctx.config['ngage']['plugin_path'] + [ctx.home]
 
-    @classmethod
-    def pass_context(cls):
-        return click.make_pass_decorator(cls, ensure=True)
 
-    def __init__(self, **kwargs):
-        self.debug = False
-        self.quiet = False
-        self.verbose = False
+class Context(munge.click.Context):
+    app_name = 'ngage'
+    config_class = ngage.Config
 
-        self.home = None
-        self.config = None
-
-        self.update_options(kwargs)
-
-    def update_options(self, kwargs):
-        opt = self.__class__.get_options(kwargs)
-
-        if opt.get('debug', None) is not None:
-            self.debug = opt['debug']
-
-        if opt.get('verbose', None) is not None:
-            self.verbose = opt['verbose']
-
-        if opt.get('home', None) is not None:
-            self.home = opt['home']
-            self.config = None
-
-        search_path = [os.path.join('.', '.ngage'),
-                       click.get_app_dir('ngage')]
-        if self.home:
-            search_path.insert(self.home, 0)
-
-        if not self.config:
-            self.config = Config(try_read=search_path)
-
-    def msg(self, msg, *args):
-        """Logs a message to stderr."""
-        if args:
-            msg %= args
-        click.echo(msg, file=sys.stderr)
-
-    def print(self, msg, *args):
-        """logs a message to stderr unless quiet is enabled"""
-        if not self.quiet:
-            self.msg(msg, *args)
-
-    def vprint(self, msg, *args):
-        """logs a message to stderr only if debug is enabled"""
-        if self.verbose:
-            self.msg(msg, *args)
-
-    def dprint(self, msg, *args):
-        """logs a message to stderr only if debug is enabled"""
-        if self.debug:
-            self.msg(msg, *args)
+    @property
+    def log(self):
+        if not getattr(self, '_logger', None):
+            self._logger = logging.getLogger('ngage')
+        return self._logger
 
 
 @click.group()
 @Context.pass_context()
 #@common_options
 def cli(ctx, **kwargs):
-    ctx.update_options(kwargs)
+    update_context(ctx, kwargs)
 
 
 @cli.command()
@@ -130,22 +81,22 @@ def cli(ctx, **kwargs):
 @click.option('--write', help='write config, if home is not specified, uses cwd', is_flag=True, default=False)
 def config(ctx, **kwargs):
     """ view and interact with the config """
-    ctx.update_options(kwargs)
+    update_context(ctx, kwargs)
 
     meta = ctx.config.meta
     if meta:
-        ctx.print("config loaded from %s", meta['config_dir'])
+        ctx.log.info("config loaded from %s", meta['config_dir'])
     else:
-        ctx.print("no config loaded")
+        ctx.log.info("no config loaded")
 
     if kwargs.get('write'):
         config_dir = ctx.home if ctx.home else ".ngage"
-        ctx.print("writing config to '%s'", config_dir)
+        ctx.log.info("writing config to '%s'", config_dir)
         ctx.config.write(config_dir)
         return
 
-    ctx.vprint('current config')
-    ctx.vprint(ctx.config.data)
+    click.echo('current config')
+    click.echo(ctx.config.data)
 
 
 @cli.command()
@@ -155,11 +106,11 @@ def config(ctx, **kwargs):
 @click.option('--diff/--no-diff', help='show diff of changes', default=False)
 def commit(ctx, **kwargs):
     """ commit changes on a device """
-    ctx.update_options(kwargs)
+    update_context(ctx, kwargs)
     dev = connect(kwargs)
 
     if kwargs['diff']:
-        ctx.print(dev.diff())
+        click.echo(dev.diff())
 
     if kwargs['check']:
         dev.check()
@@ -173,11 +124,11 @@ def commit(ctx, **kwargs):
 @click.option('--index', help='rollback index', default=0)
 def diff(ctx, **kwargs):
     """ get diff from device """
-    ctx.update_options(kwargs)
+    update_context(ctx, kwargs)
     dev = connect(kwargs)
 
     diff = dev.diff(**kwargs)
-    ctx.print(diff)
+    click.echo(diff)
 
 
 @cli.command()
@@ -186,7 +137,7 @@ def diff(ctx, **kwargs):
 @click.option('--index', help='rollback index', default=0)
 def rollback(ctx, **kwargs):
     """ rollback device config """
-    ctx.update_options(kwargs)
+    update_context(ctx, kwargs)
     dev = connect(kwargs)
 
     dev.rollback(**kwargs)
@@ -205,7 +156,7 @@ def pull(ctx, filename, **kwargs):
         filename = filename.format(**kwargs)
         filename = os.path.join(kwargs['output_dir'], filename)
 
-    ctx.update_options(kwargs)
+    update_context(ctx, kwargs)
 
     dev = connect(kwargs)
     config = dev.pull(**kwargs)
@@ -226,7 +177,7 @@ def pull(ctx, filename, **kwargs):
 @click.argument('files', nargs=-1)
 def push(ctx, files, **kwargs):
     """ push config to a device """
-    ctx.update_options(kwargs)
+    update_context(ctx, kwargs)
     dev = connect(kwargs)
 
     try:
@@ -237,7 +188,7 @@ def push(ctx, files, **kwargs):
         rollback = kwargs['rollback']
 
         if rollback and commit:
-            ctx.print("cannot have both commit and rollback")
+            ctx.error("cannot have both commit and rollback")
             return 1
 
         if lock:
@@ -246,10 +197,10 @@ def push(ctx, files, **kwargs):
         # nested try to allow for rollback on push errors
         try:
             for each in files:
-                ctx.vprint("pushing %s" % (each,))
+                ctx.log.info("pushing %s" % (each,))
                 dev.push(each)
                 if diff:
-                    ctx.print(dev.diff())
+                    click.echo(dev.diff())
 
                 dev.check()
                 if check:
@@ -261,16 +212,16 @@ def push(ctx, files, **kwargs):
             raise
 
         if rollback:
-            ctx.vprint("rollback %s" % (dev.host,))
+            ctx.log.info("rollback %s" % (dev.host,))
             dev.rollback()
 
         elif commit:
-            ctx.vprint("committing %s" % (dev.host,))
+            ctx.log.info("committing %s" % (dev.host,))
             dev.commit()
 
     except Exception as e:
-        ctx.print("push error %s", e)
-        ctx.vprint(dev.diff())
+        ctx.log.error("push error %s", e)
+        ctx.log.info(dev.diff())
         raise
 
     finally:
