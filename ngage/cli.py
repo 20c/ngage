@@ -5,10 +5,8 @@ import click
 import getpass
 import logging
 import os
-import sys
 
 import ngage
-from ngage.config import Config
 from ngage.exceptions import AuthenticationError
 import munge.click
 
@@ -61,7 +59,10 @@ def update_context(ctx, kwargs):
     if not isinstance(ctx.config['ngage']['plugin_path'], list):
         raise ValueError('config item ngage.plugin_path must be a list')
     # set plugin search path to defined + $home/plugins
-    ngage.plugin.searchpath = ctx.config['ngage']['plugin_path'] + [ctx.home]
+    searchpath = ctx.config['ngage']['plugin_path']
+    if ctx.home:
+        searchpath.append(os.path.join(ctx.home, 'plugins'))
+    ngage.plugin.searchpath = searchpath
 
 
 class Context(munge.click.Context):
