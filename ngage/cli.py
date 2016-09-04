@@ -17,7 +17,13 @@ def connect(kwargs):
     try:
         # get connect specific options and remove them from kwargs
         config = get_connect_options(kwargs)
-        cls = ngage.plugin.get_plugin_class(config['type'])
+
+        typ = config['type']
+        # check for subtype
+        if ':' in typ:
+            (typ, na) = config['type'].split(':', 1)
+
+        cls = ngage.plugin.get_plugin_class(typ)
         drv = cls(config)
         drv.open()
         return drv
@@ -27,6 +33,7 @@ def connect(kwargs):
         if config['password']:
             return connect(config)
         raise
+
 
 def make_get_options(*keys):
     def getter(kwargs):
@@ -95,7 +102,11 @@ def config(ctx, **kwargs):
         ctx.config.write(config_dir)
         return
 
-    click.echo('current config')
+    if ctx.home:
+        home = ctx.home
+    else:
+        home = 'defaults, no home set (--write will create .ngage)'
+    click.echo('current config from %s' % home)
     click.echo(ctx.config.data)
 
 

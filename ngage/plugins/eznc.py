@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import ngage
-from ngage.exceptions import AuthenticationError
+from ngage.exceptions import AuthenticationError, ConfigError
 
 from jnpr.junos import Device
 from jnpr.junos.utils.config import Config
@@ -10,6 +10,10 @@ from jnpr.junos.exception import ConfigLoadError, ConnectAuthError
 
 @ngage.plugin.register('eznc')
 class EzncDriver(ngage.plugins.DriverPlugin):
+    """
+    driver for junos-eznc
+        pip install junos-eznc
+    """
     plugin_type = 'eznc'
 
     def _do_init(self):
@@ -49,11 +53,19 @@ class EzncDriver(ngage.plugins.DriverPlugin):
 
         # bogus exception on warnings
         except ConfigLoadError as e:
-            # skip warnings
+            errs = []
             for err in e.errs:
+                # skip warnings
                 if not err['severity'] or err['severity'] == 'warning':
                     continue
-                raise
+                # expand multiple errors split by newlines
+                errs = errs + e.message.split('\n')
+
+            if errs:
+                if len(errs) == 1:
+                    raise ConfigError(errs[0])
+                else:
+                    raise ConfigError(errs)
 
     def _do_diff(self, index=0):
         return self.dev.cu.diff(index)
