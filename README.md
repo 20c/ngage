@@ -14,6 +14,25 @@ network gadget config twirler
 
 This is a joining of various automation scripts I've used in various places. As I switch things over to use this, I'll merge features and probably change some interfaces. Currently it should be considered a beta script as code is merged and tested. All components are used in production, but obviously the merge process may introduce bugs and growing pains.
 
+
+## Usage
+
+```
+Usage: ngage [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  commit    commit changes on a device
+  config    view and interact with the config
+  diff      get diff from device
+  pull      pull config from a device
+  push      push config to a device
+  rollback  rollback device config
+```
+
+
 ## License
 
 Apache-2.0
