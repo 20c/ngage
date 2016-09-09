@@ -1,0 +1,19 @@
+site_name: ngage
+site_url: https://github.com/20c/ngage
+repo_url: https://github.com/20c/ngage
+
+theme: readthedocs
+
+pages:
+  - Home: 'index.md'
+  - Examples: 'examples.md'
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - def_list
+  - footnotes
+  - markdown_include.include
+  - tables
+  - toc
+

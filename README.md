@@ -32,6 +32,100 @@ Commands:
   rollback  rollback device config
 ```
 
+### Common Options
+
+```
+Options:
+  --quiet                     no output at all
+  --verbose                   enable more verbose output
+  --home TEXT                 specify the home directory,
+                              by default will check in order:
+                                  $NGAGE_HOME,
+                                  ./.ngage,
+                                  ~/.config/ngage
+  --debug                     enable extra debug output
+```
+
+### Connection Options
+
+```
+Options:
+  --user TEXT                 username
+  --password TEXT             password to use if not using key auth
+  --type TEXT                 type of connection, default eznc
+  --port TEXT                 port to connect to, default per platform
+```
+
+If auth fails, it will prompt for passowrd, for initial config to push users and ssh keys, you could do:
+
+```
+ngage push 00-system.conf --user=root $HOSTNAME
+```
+
+### push
+
+```
+Usage: ngage push [OPTIONS] HOST [FILES]...
+
+  push config to a device
+
+Options:
+  --quiet                     no output at all
+  --verbose                   enable more verbose output
+  --home TEXT                 specify the home directory, by default will
+                              check in order: $NGAGE_HOME, ./.ngage,
+                              /home/grizz/.config/ngage
+  --debug                     enable extra debug output
+  --password TEXT             password to use if not using key auth
+  --user TEXT                 username
+  --type TEXT                 type of connection, default eznc
+  --port TEXT                 port to connect to, default per platform
+  --check / --no-check        commit check config
+  --commit / --no-commit      commit changes
+  --diff / --no-diff          show diff of changes
+  --lock / --no-lock          lock config for exclusive access
+  --rollback / --no-rollback  rollback changes after push
+  --help                      Show this message and exit.
+```
+
+
+### pull
+
+```
+Usage: ngage pull [OPTIONS] HOST [FILENAME]
+
+  pull config from a device
+
+Options:
+  --quiet            no output at all
+  --verbose          enable more verbose output
+  --home TEXT        specify the home directory, by default will check in
+                     order: $NGAGE_HOME, ./.ngage, /home/grizz/.config/ngage
+  --debug            enable extra debug output
+  --password TEXT    password to use if not using key auth
+  --user TEXT        username
+  --type TEXT        type of connection, default eznc
+  --port TEXT        port to connect to, default per platform
+  --output-dir TEXT  directory to save file to, will be named from filename
+                     option
+  --help             Show this message and exit.
+```
+
+### Utility functions
+
+Useful for debugging, working on device “directly” with a git log.
+
+```
+  commit    commit changes on a device
+  diff      get diff from device
+  rollback  rollback device config
+```
+
+## Supported Devices
+
+By default ngage uses a native Junos client written with eznc, it also suppots
+pushing config via a [NAPALM](http://napalm.readthedocs.io/en/latest/) plugin.
+
 
 ## License
 
