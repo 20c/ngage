@@ -124,7 +124,12 @@ Useful for debugging, working on device “directly” with a git log.
 ## Supported Devices
 
 By default ngage uses a native Junos client written with eznc, it also suppots
-pushing config via a [NAPALM](http://napalm.readthedocs.io/en/latest/) plugin.
+pushing config via a [NAPALM](http://napalm.readthedocs.io/en/latest/) plugin. To specify a NAPALM driver, use `type=napalm:$driver`, for example `type=napalm:ios`
+
+
+## Documentation
+
+Documentation is created with mkdocs and available at <http://vaping.readthedocs.io/en/latest/>
 
 
 ## License
