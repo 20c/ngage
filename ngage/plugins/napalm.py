@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import ngage
 from ngage.exceptions import AuthenticationError, ConfigError
 
-import napalm
+import napalm_base
 from napalm_base.exceptions import (
     ConnectionException,
     ReplaceConfigException,
@@ -26,7 +26,7 @@ class Driver(ngage.plugins.DriverPlugin):
             raise ValueError('napalm requires a subtype')
 
         (na, driver) = config['type'].split(':', 2)
-        cls = napalm.get_network_driver(driver)
+        cls = napalm_base.get_network_driver(driver)
         self.dev = cls(self.host, self.user, self.password)
 
     def _do_open(self):
@@ -39,13 +39,14 @@ class Driver(ngage.plugins.DriverPlugin):
     def _do_close(self):
         self.dev.close()
 
-#    def _do_pull(self):
-# not impl by napalm
+    def _do_pull(self):
+        if not hasattr(self.dev, 'get_config'):
+            raise NotImplementedError('get_config not implemented, please update napalm')
+        return self.dev.get_config(retrieve='candidate')['candidate']
 
     def _do_push(self, fname, **kwargs):
         try:
             self.dev.load_merge_candidate(filename=fname)
-
 
         except (MergeConfigException, ReplaceConfigException) as e:
             raise ConfigError(e.message)

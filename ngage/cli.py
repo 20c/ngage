@@ -171,7 +171,7 @@ def pull(ctx, filename, **kwargs):
     update_context(ctx, kwargs)
 
     dev = connect(kwargs)
-    config = dev.pull(**kwargs)
+    config = dev.pull()
 
     with click.open_file(filename, 'w') as fobj:
         fobj.write(config)
