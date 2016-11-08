@@ -30,7 +30,4 @@ def test_init_no_subtype(cls):
 
 def test_notimpl(obj):
     with pytest.raises(NotImplementedError):
-        obj.pull()
-
-    with pytest.raises(NotImplementedError):
         obj.check()
