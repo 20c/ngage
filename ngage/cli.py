@@ -7,6 +7,7 @@ import logging
 import os
 
 import ngage
+import ngage.shell
 from ngage.exceptions import AuthenticationError
 import munge.click
 
@@ -239,4 +240,26 @@ def push(ctx, files, **kwargs):
     finally:
         if lock:
             dev.unlock()
+
+
+@cli.command()
+@Context.pass_context()
+@Context.options
+@connect_options
+@click.option('--check/--no-check', help='commit check config', default=True)
+@click.option('--commit/--no-commit', help='commit changes', default=False)
+@click.option('--diff/--no-diff', help='show diff of changes', default=False)
+@click.option('--lock/--no-lock', help='lock config for exclusive access', default=True)
+@click.option('--rollback/--no-rollback', help='rollback changes after push', default=False)
+@click.argument('command', nargs=-1)
+def shell(ctx, command=(), **kwargs):
+    update_context(ctx, kwargs)
+
+    dev = connect(kwargs)
+    shell = ngage.shell.Shell(ctx, device=dev, **kwargs)
+    if not command:
+        shell.cmdloop()
+    else:
+        cmd = " ".join(command)
+        shell.onecmd(cmd)
 
