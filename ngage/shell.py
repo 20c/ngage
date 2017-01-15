@@ -26,8 +26,6 @@ class BaseShell(Cmd, object):
 class Shell(BaseShell):
     def __init__(self, ctx, device=None, **kwargs):
         # break abstraction for show commands
-        if device.plugin_type != 'napalm':
-            raise NotImplementedError("shell only supported on napalm connections")
         self.ctx = ctx
         self.device = device
         super(Shell, self).__init__()
@@ -80,7 +78,7 @@ class Shell(BaseShell):
 
     def do_show(self, args):
         if args == 'bgp':
-            neigh = self.device.dev.get_bgp_neighbors()
+            neigh = self.device.get_bgp_neighbors()
             self.print_bgp_summary(neigh['peers'])
 
         elif args == 'interfaces':

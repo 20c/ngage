@@ -28,8 +28,8 @@ class DriverPlugin(PluginBase):
             call = "_do_" + func
 
             if not hasattr(self, call):
-                raise TypeError("function '%s' not on object type %s"
-                                % (call, self.plugin_type))
+                raise TypeError("%s is not implemented on type %s"
+                                % (func, self.plugin_type))
 
             self.log.debug(func)
             return getattr(self, call)(**kwargs)
@@ -83,6 +83,9 @@ class DriverPlugin(PluginBase):
     def rollback(self, **kwargs):
         return self._try_func(**kwargs)
 
+    def get_bgp_neighbors(self, **kwargs):
+        return self._try_func(**kwargs)
+
 # internal interface #############################
 
     def _do_init(self):
@@ -119,4 +122,15 @@ class DriverPlugin(PluginBase):
 
     def _do_rollback(self, index=0):
         raise NotImplementedError
+
+# napalm compat interface ########################
+
+    def _get_bgp_neighbors(self):
+        raise NotImplementedError
+
+# routes interface ###############################
+
+    def _get_routes(self, **kwargs):
+        raise NotImplementedError
+
 

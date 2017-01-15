@@ -77,3 +77,5 @@ class Driver(ngage.plugins.DriverPlugin):
         else:
             raise NotImplementedError('version index not implemented')
 
+    def _do_get_bgp_neighbors(self):
+        return self.dev.get_bgp_neighbors()
