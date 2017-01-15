@@ -4,34 +4,13 @@ from __future__ import print_function
 import click
 import getpass
 import logging
+import munge.click
+import munge.util
 import os
 
 import ngage
 import ngage.shell
 from ngage.exceptions import AuthenticationError
-import munge.click
-
-
-def connect(kwargs):
-    try:
-        # get connect specific options and remove them from kwargs
-        config = get_connect_options(kwargs)
-
-        typ = config['type']
-        # check for subtype
-        if ':' in typ:
-            (typ, na) = config['type'].split(':', 1)
-
-        cls = ngage.plugin.get_plugin_class(typ)
-        drv = cls(config)
-        drv.open()
-        return drv
-
-    except AuthenticationError:
-        config['password'] = click.prompt('password', hide_input=True)
-        if config['password']:
-            return connect(config)
-        raise
 
 
 def make_get_options(*keys):
@@ -43,7 +22,7 @@ def make_get_options(*keys):
 def connect_options(f):
     f = click.argument('host', nargs=1)(f)
     f = click.option('--port', help='port to connect to, default per platform')(f)
-    f = click.option('--type', help='type of connection, default eznc', default='eznc')(f)
+    f = click.option('--type', help='type of connection')(f)
     f = click.option('--user', help='username', envvar='NGAGE_USER',
                      default=getpass.getuser())(f)
     f = click.option('--password', help='password to use if not using key auth')(f)
@@ -75,6 +54,34 @@ class Context(munge.click.Context):
         if not getattr(self, '_logger', None):
             self._logger = logging.getLogger('ngage')
         return self._logger
+
+    def connect(self, kwargs):
+        try:
+            # get default config
+            config = self.config['ngage']['default'].copy()
+
+            # overlay kwargs on default and remove them from kwargs
+            for k, v in get_connect_options(kwargs).items():
+                if v:
+                    config[k] = v
+#            munge.util.recursive_update(config, get_connect_options(kwargs))
+
+            typ = config['type']
+            # check for subtype
+            if ':' in typ:
+                (typ, na) = config['type'].split(':', 1)
+
+            cls = ngage.plugin.get_plugin_class(typ)
+            drv = cls(config)
+            self.log.debug("connecting to {host}".format(**config))
+            drv.open()
+            return drv
+
+        except AuthenticationError:
+            config['password'] = click.prompt('password', hide_input=True)
+            if config['password']:
+                return connect(config)
+            raise
 
 
 @click.group()
@@ -120,7 +127,7 @@ def config(ctx, **kwargs):
 def commit(ctx, **kwargs):
     """ commit changes on a device """
     update_context(ctx, kwargs)
-    dev = connect(kwargs)
+    dev = ctx.connect(kwargs)
 
     if kwargs['diff']:
         click.echo(dev.diff())
@@ -138,7 +145,7 @@ def commit(ctx, **kwargs):
 def diff(ctx, **kwargs):
     """ get diff from device """
     update_context(ctx, kwargs)
-    dev = connect(kwargs)
+    dev = ctx.connect(kwargs)
 
     diff = dev.diff(**kwargs)
     click.echo(diff)
@@ -151,7 +158,7 @@ def diff(ctx, **kwargs):
 def rollback(ctx, **kwargs):
     """ rollback device config """
     update_context(ctx, kwargs)
-    dev = connect(kwargs)
+    dev = ctx.connect(kwargs)
 
     dev.rollback(**kwargs)
 
@@ -171,7 +178,7 @@ def pull(ctx, filename, **kwargs):
 
     update_context(ctx, kwargs)
 
-    dev = connect(kwargs)
+    dev = ctx.connect(kwargs)
     config = dev.pull()
 
     with click.open_file(filename, 'w') as fobj:
@@ -191,7 +198,7 @@ def pull(ctx, filename, **kwargs):
 def push(ctx, files, **kwargs):
     """ push config to a device """
     update_context(ctx, kwargs)
-    dev = connect(kwargs)
+    dev = ctx.connect(kwargs)
 
     try:
         check = kwargs['check']
@@ -255,7 +262,7 @@ def push(ctx, files, **kwargs):
 def shell(ctx, command=(), **kwargs):
     update_context(ctx, kwargs)
 
-    dev = connect(kwargs)
+    dev = ctx.connect(kwargs)
     shell = ngage.shell.Shell(ctx, device=dev, **kwargs)
     if not command:
         shell.cmdloop()
