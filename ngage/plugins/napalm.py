@@ -21,13 +21,14 @@ class Driver(ngage.plugins.DriverPlugin):
         self.host = config.get('host')
         self.user = config.get('user')
         self.password = config.get('password')
+        self.optional_args = config.get('driver_args', {})
 
         if ':' not in config['type']:
             raise ValueError('napalm requires a subtype')
 
-        (na, driver) = config['type'].split(':', 2)
+        driver = config['type'].split(':', 2)[1]
         cls = napalm_base.get_network_driver(driver)
-        self.dev = cls(self.host, self.user, self.password)
+        self.dev = cls(self.host, self.user, self.password, optional_args=self.optional_args)
 
     def _do_open(self):
         try:
