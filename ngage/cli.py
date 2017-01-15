@@ -55,6 +55,14 @@ class Context(munge.click.Context):
             self._logger = logging.getLogger('ngage')
         return self._logger
 
+    def init(self):
+        super(Context, self).init()
+
+        # only print our log messages
+        for handler in logging.getLogger().handlers:
+            handler.addFilter(logging.Filter(self.app_name))
+
+
     def connect(self, kwargs):
         try:
             # get default config

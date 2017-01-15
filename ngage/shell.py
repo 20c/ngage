@@ -2,6 +2,8 @@ from __future__ import print_function
 
 import click
 from cmd import Cmd
+from collections import Counter
+import munge
 from pprint import pformat
 from tabulate import tabulate
 
@@ -16,6 +18,9 @@ class BaseShell(Cmd, object):
     def print_table(self, table):
         click.echo(tabulate(table.items(), tablefmt='plain'))
 
+    def print_dict(self, data):
+        codec = munge.get_codec('yaml')()
+        click.echo(codec.dumps(data))
 
 
 class Shell(BaseShell):
@@ -43,24 +48,51 @@ class Shell(BaseShell):
 
     def do_ngage(self, args):
         self.print("Config meta:")
-        self.print_table(self.ctx.config.meta.items())
+        self.print_table(self.ctx.config.meta)
         self.print()
         self.print("Config")
-        self.print(tabulate(self.ctx.config.items(), tablefmt='plain'))
+        self.print_dict(self.ctx.config.data)
+
+    def print_bgp_summary(self, peers):
+        headers = ['Peer', 'AS', 'Status', 'Active/Accepted/Received/Sent']
+        data = []
+        for addr, peer in peers.items():
+            if peer['is_up']:
+                status = click.style('up', fg='green')
+            else:
+                status = click.style('down', fg='red')
+
+            pcount = Counter()
+            for each in peer['address_family'].values():
+                pcount += Counter(each)
+            routes = "-/{}/{}/{}".format(
+                pcount['accepted_prefixes'],
+                pcount['received_prefixes'],
+                pcount['sent_prefixes'],
+                )
+
+            data.append([addr, peer['remote_as'], status, routes])
+
+        click.echo(tabulate(data, headers=headers, tablefmt='plain'))
+
+#    def precmd(self, line):
+#    def completedefault(text, line, begidx, endidx):
 
     def do_show(self, args):
-        # TODO nested cmds
         if args == 'bgp':
             neigh = self.device.dev.get_bgp_neighbors()
+            self.print_bgp_summary(neigh['peers'])
+
         elif args == 'interfaces':
-            neigh = self.device.dev.get_interfaces()
+            intf = self.device.dev.get_interfaces()
+            print(intf)
+            self.print_table(intf)
         else:
             self.print("Unknown command")
 
         #for each in neigh:
         #    print(each)
         #    self.print_table(each)
-        self.print_table(neigh)
 
     # aliases
     do_EOF = do_exit
