@@ -22,6 +22,10 @@ class BaseShell(Cmd, object):
         codec = munge.get_codec('yaml')()
         click.echo(codec.dumps(data))
 
+    def print_dict_list(self, data):
+        for row in data:
+            self.print_dict(row)
+
 
 class Shell(BaseShell):
     def __init__(self, ctx, device=None, **kwargs):
@@ -74,7 +78,7 @@ class Shell(BaseShell):
         click.echo(tabulate(data, headers=headers, tablefmt='plain'))
 
     def print_routes(self, routes):
-        self.print_dict(routes)
+        self.print_dict_list(routes)
 #    def precmd(self, line):
 #    def completedefault(text, line, begidx, endidx):
 
