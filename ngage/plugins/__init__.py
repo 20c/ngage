@@ -86,6 +86,9 @@ class DriverPlugin(PluginBase):
     def get_bgp_neighbors(self, **kwargs):
         return self._try_func(**kwargs)
 
+    def get_routes(self, **kwargs):
+        return self._try_func(**kwargs)
+
 # internal interface #############################
 
     def _do_init(self):

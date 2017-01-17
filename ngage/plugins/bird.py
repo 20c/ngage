@@ -110,3 +110,8 @@ class Driver(ngage.plugins.DriverPlugin):
             rv['peers'][addr] = row
 
         return rv
+
+    def _do_get_routes(self):
+        routes = self.dev.get_routes()
+        return routes
+

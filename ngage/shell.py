@@ -73,6 +73,8 @@ class Shell(BaseShell):
 
         click.echo(tabulate(data, headers=headers, tablefmt='plain'))
 
+    def print_routes(self, routes):
+        self.print_dict(routes)
 #    def precmd(self, line):
 #    def completedefault(text, line, begidx, endidx):
 
@@ -80,6 +82,10 @@ class Shell(BaseShell):
         if args == 'bgp':
             neigh = self.device.get_bgp_neighbors()
             self.print_bgp_summary(neigh['peers'])
+
+        elif args == 'route':
+            neigh = self.device.get_routes()
+            self.print_routes(neigh)
 
         elif args == 'interfaces':
             intf = self.device.dev.get_interfaces()
