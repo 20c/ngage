@@ -8,6 +8,34 @@ from pprint import pformat
 from tabulate import tabulate
 
 
+def parse_args(arg_list, keywords):
+    """
+    parses a list of args, for either plain args or keyword args
+    args matching the keyword take the next argument as a value
+    missing values or duplicate keywords throw ValueError
+    returns a list and a dict
+    >>> args, kwargs = parse_args(arglist, ('keya', 'keyb')
+    """
+    args = []
+    kwargs = {}
+
+    it = iter(arg_list)
+    for each in it:
+        if each not in keywords:
+            args.append(each)
+            continue
+
+        if each in kwargs:
+            raise ValueError("{} passed more than once".format(each))
+
+        try:
+            kwargs[each] = next(it)
+        except StopIteration:
+            raise ValueError("{} passed without a value".format(each))
+
+    return args, kwargs
+
+
 class BaseShell(Cmd, object):
     def __init__(self):
         super(BaseShell, self).__init__()
@@ -32,6 +60,7 @@ class Shell(BaseShell):
         # break abstraction for show commands
         self.ctx = ctx
         self.device = device
+        self._peers = None
         super(Shell, self).__init__()
 
     # don't repeat command on empty line
@@ -77,26 +106,47 @@ class Shell(BaseShell):
 
         click.echo(tabulate(data, headers=headers, tablefmt='plain'))
 
+    def peers(self, refresh=False):
+        if not self._peers or refresh:
+            self._peers = self.device.get_bgp_neighbors()
+        return self._peers
+
     def print_routes(self, routes):
         self.print_dict_list(routes)
 #    def precmd(self, line):
 #    def completedefault(text, line, begidx, endidx):
 
+    def show_route(self, argv):
+        keywords = ('peer')
+        args, kwargs = parse_args(argv, keywords)
+
+        if len(args):
+            if len(args) > 1:
+                raise ValueError("show route takes 1 argument")
+            kwargs['prefix'] = args[0]
+
+        if 'peer' in kwargs:
+            kwargs['peer'] = self.device.lookup_peer(kwargs['peer'])
+
+        data = self.device.get_routes(**kwargs)
+        self.print_routes(data)
+
     def do_show(self, args):
-        if args == 'bgp':
-            neigh = self.device.get_bgp_neighbors()
+        argv = args.split(' ')
+
+        if argv[0] == 'bgp':
+            neigh = self.peers(refresh=True)
             self.print_bgp_summary(neigh['peers'])
 
-        elif args == 'route':
-            neigh = self.device.get_routes()
-            self.print_routes(neigh)
+        elif argv[0] == 'route':
+            self.show_route(argv[1:])
 
-        elif args == 'interfaces':
+        elif argv[0] == 'interfaces':
             intf = self.device.dev.get_interfaces()
             print(intf)
             self.print_table(intf)
         else:
-            self.print("Unknown command")
+            self.print("Unknown command {}".format(args))
 
         #for each in neigh:
         #    print(each)

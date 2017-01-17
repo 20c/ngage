@@ -74,6 +74,26 @@ class Driver(ngage.plugins.DriverPlugin):
         else:
             raise NotImplementedError('version index not implemented')
 
+    def _do_lookup_peer(self, peer):
+        # may want to cache this?
+        peers = self.dev.get_peer_status()
+
+        # FIXME - this should to check for as<number>
+        if peer.lower().startswith('as'):
+            for each in peers:
+                if each['asn'] == peer[2:]:
+                    return each['name']
+
+        for each in peers:
+            if each['name'] == peer:
+                return peer
+            elif each['address'] == peer:
+                    return each['name']
+            elif each['asn'] == peer:
+                    return each['name']
+
+        raise ValueError("peer {} not found".format(peer))
+
     def _do_get_bgp_neighbors(self):
         router_id = self.dev.get_bird_status().get('router_id', '')
 
@@ -111,7 +131,7 @@ class Driver(ngage.plugins.DriverPlugin):
 
         return rv
 
-    def _do_get_routes(self):
-        routes = self.dev.get_routes()
+    def _do_get_routes(self, **kwargs):
+        routes = self.dev.get_routes(**kwargs)
         return routes
 

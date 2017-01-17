@@ -21,7 +21,7 @@ class DriverPlugin(PluginBase):
         # base config options
         self.strict = self.config.get('strict', True)
 
-    def _try_func(self, **kwargs):
+    def _try_func(self, *args, **kwargs):
         """ tries to call an internal method, fails based on strict config """
         try:
             func = inspect.currentframe().f_back.f_code.co_name
@@ -32,7 +32,7 @@ class DriverPlugin(PluginBase):
                                 % (func, self.plugin_type))
 
             self.log.debug(func)
-            return getattr(self, call)(**kwargs)
+            return getattr(self, call)(*args, **kwargs)
         except NotImplementedError:
             if self.strict:
                 raise
@@ -68,7 +68,7 @@ class DriverPlugin(PluginBase):
 
     def push(self, fname, **kwargs):
         """ push config from device """
-        self.log.debug("push %s...", fname)
+        self.log.debug("push %s..." % fname)
         self._do_push(fname, **kwargs)
 
     def diff(self, **kwargs):
@@ -85,6 +85,9 @@ class DriverPlugin(PluginBase):
 
     def get_bgp_neighbors(self, **kwargs):
         return self._try_func(**kwargs)
+
+    def lookup_peer(self, peer):
+        return self._try_func(peer)
 
     def get_routes(self, **kwargs):
         return self._try_func(**kwargs)
@@ -126,14 +129,5 @@ class DriverPlugin(PluginBase):
     def _do_rollback(self, index=0):
         raise NotImplementedError
 
-# napalm compat interface ########################
-
-    def _get_bgp_neighbors(self):
-        raise NotImplementedError
-
-# routes interface ###############################
-
-    def _get_routes(self, **kwargs):
-        raise NotImplementedError
-
-
+    def _do_lookup_peer(self, peer):
+        return peer
