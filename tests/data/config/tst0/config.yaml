@@ -1,0 +1,22 @@
+ngage:
+  default:
+    type: napalm:bird
+    driver_args:
+      socket_file: /srv/bird/var/run/bird/bird-vlanid1-ipv4.ctl
+
+  plugin_path:
+    - config/rs1/plugins
+  groups: []
+  hosts:
+    - host: tst0.example.com
+      type: exactmatch
+    - host: tst1.*
+      type: override
+      hostname: newhost
+      user: newuser
+    - host: tst?.*
+      type: match
+    - host: "*"
+      type: fallthrough
+    - host: "*"
+      type: never

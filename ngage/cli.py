@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import click
+import fnmatch
 import getpass
 import logging
 import munge.click
@@ -23,8 +24,7 @@ def connect_options(f):
     f = click.argument('host', nargs=1)(f)
     f = click.option('--port', help='port to connect to, default per platform')(f)
     f = click.option('--type', help='type of connection')(f)
-    f = click.option('--user', help='username', envvar='NGAGE_USER',
-                     default=getpass.getuser())(f)
+    f = click.option('--user', help='username', envvar='NGAGE_USER')(f)
     f = click.option('--password', help='password to use if not using key auth')(f)
     return f
 
@@ -62,22 +62,49 @@ class Context(munge.click.Context):
         for handler in logging.getLogger().handlers:
             handler.addFilter(logging.Filter(self.app_name))
 
+    def get_host_config(self, target, config):
+        # look for host config
+        for each in self.config['ngage']['hosts']:
+            host = each.get('host', None)
+            if not host:
+                continue
+            if host == target or fnmatch.fnmatch(target, host):
+                munge.util.recursive_update(config, each, copy=True)
+                break
+
+    def get_connect_config(self, kwargs):
+        # get default config
+        config = self.config['ngage']['default'].copy()
+        # leave host on kwargs so it will override and matched config
+        target = kwargs.get('host', None)
+        print(kwargs)
+
+        if target:
+            self.get_host_config(target, config)
+
+        # overlay kwargs on default and remove them from kwargs
+        for k, v in get_connect_options(kwargs).items():
+            if v:
+                config[k] = v
+
+        # overwrite if hostname is set
+        if 'hostname' in config:
+            config['host'] = config.pop('hostname')
+
+        if not config.get('user', None):
+            config['user'] = getpass.getuser()
+
+        return config
 
     def connect(self, kwargs):
         try:
-            # get default config
-            config = self.config['ngage']['default'].copy()
-
-            # overlay kwargs on default and remove them from kwargs
-            for k, v in get_connect_options(kwargs).items():
-                if v:
-                    config[k] = v
-#            munge.util.recursive_update(config, get_connect_options(kwargs))
+            # get config
+            config = self.get_connect_config(kwargs)
 
             typ = config['type']
             # check for subtype
             if ':' in typ:
-                (typ, na) = config['type'].split(':', 1)
+                typ = config['type'].split(':', 1)[0]
 
             cls = ngage.plugin.get_plugin_class(typ)
             drv = cls(config)

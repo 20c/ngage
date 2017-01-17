@@ -17,7 +17,6 @@ class Config(munge.Config):
                 'hosts': [],
                 'groups': [],
                 },
-            'hosts': [],
             },
         'config_dir': None,
         'codec': 'yaml',
