@@ -78,7 +78,6 @@ class Driver(ngage.plugins.DriverPlugin):
         # may want to cache this?
         peers = self.dev.get_peer_status()
 
-        # FIXME - this should to check for as<number>
         if peer.lower().startswith('as'):
             for each in peers:
                 if each['asn'] == peer[2:]:

@@ -61,6 +61,7 @@ class Shell(BaseShell):
         self.ctx = ctx
         self.device = device
         self._peers = None
+        self.prompt = "{}$ ".format(device.config['host'])
         super(Shell, self).__init__()
 
     # don't repeat command on empty line
@@ -116,6 +117,16 @@ class Shell(BaseShell):
 #    def precmd(self, line):
 #    def completedefault(text, line, begidx, endidx):
 
+    def show_bgp(self, argv):
+        keywords = ('peer')
+        args, kwargs = parse_args(argv, keywords)
+
+        if len(args) != 1:
+            raise ValueError("show route takes 1 argument")
+        if args[0] == 'summary':
+            neigh = self.peers(refresh=True)
+            self.print_bgp_summary(neigh['peers'])
+
     def show_route(self, argv):
         keywords = ('peer')
         args, kwargs = parse_args(argv, keywords)
@@ -135,8 +146,7 @@ class Shell(BaseShell):
         argv = args.split(' ')
 
         if argv[0] == 'bgp':
-            neigh = self.peers(refresh=True)
-            self.print_bgp_summary(neigh['peers'])
+            self.show_bgp(argv[1:])
 
         elif argv[0] == 'route':
             self.show_route(argv[1:])

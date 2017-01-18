@@ -60,6 +60,7 @@ class Context(munge.click.Context):
 
         # only print our log messages
         for handler in logging.getLogger().handlers:
+            #handler.addFilter(logging.Filter('pybird'))
             handler.addFilter(logging.Filter(self.app_name))
 
     def get_host_config(self, target, config):
@@ -77,7 +78,6 @@ class Context(munge.click.Context):
         config = self.config['ngage']['default'].copy()
         # leave host on kwargs so it will override and matched config
         target = kwargs.get('host', None)
-        print(kwargs)
 
         if target:
             self.get_host_config(target, config)
