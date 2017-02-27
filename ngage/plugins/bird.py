@@ -19,11 +19,11 @@ class Driver(ngage.plugins.DriverPlugin):
         self.password = config.get('password')
         self.optional_args = config.get('driver_args', {})
 
-        socket_file = self.optional_args.pop('socket_file', None)
-        if not socket_file:
+        self.socket_file = self.optional_args.pop('socket_file', None)
+        if not self.socket_file:
             raise ValueError('bird requires socket_file in driver_args')
 
-        self.dev = PyBird(socket_file, self.host, self.user, self.password)
+        self.dev = PyBird(self.socket_file, self.host, self.user, self.password, **self.optional_args)
 
     def _do_open(self):
         # TODO connection caching
@@ -38,33 +38,32 @@ class Driver(ngage.plugins.DriverPlugin):
         self.dev.close()
 
     def _do_pull(self):
-        if not hasattr(self.dev, 'get_config'):
-            raise NotImplementedError('get_config not implemented, please update napalm')
-        return self.dev.get_config(retrieve='candidate')['candidate']
+        return self.dev.get_config()
 
     def _do_push(self, fname, **kwargs):
-        try:
-            self.dev.load_merge_candidate(filename=fname)
-
-        except (MergeConfigException, ReplaceConfigException) as e:
-            raise ConfigError(e.message)
+        with open(fname) as fobj:
+            conf = fobj.read()
+        return self.dev.put_config(conf)
 
     def _do_diff(self, index=0):
+        return
         if index != 0:
             raise NotImplementedError('version index not implemented')
         return self.dev.compare_config()
 
     def _do_lock(self):
-        self.dev.lock()
+        pass
+        #self.dev.lock()
 
     def _do_unlock(self):
-        self.dev.unlock()
+        pass
+        #self.dev.unlock()
 
     def _do_commit(self, **kwargs):
         self.dev.commit_config()
 
-#    def _do_check(self):
-# not impl by napalm
+    def _do_check(self):
+        self.dev.check_config()
 
     def _do_rollback(self, index=0):
         if index == 0:

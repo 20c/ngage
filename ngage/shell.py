@@ -127,6 +127,10 @@ class Shell(BaseShell):
             neigh = self.peers(refresh=True)
             self.print_bgp_summary(neigh['peers'])
 
+    def show_config(self, argv):
+        config = self.device.pull()
+        print(config)
+
     def show_route(self, argv):
         keywords = ('peer')
         args, kwargs = parse_args(argv, keywords)
@@ -147,6 +151,9 @@ class Shell(BaseShell):
 
         if argv[0] == 'bgp':
             self.show_bgp(argv[1:])
+
+        elif argv[0] == 'config':
+            self.show_config(argv[1:])
 
         elif argv[0] == 'route':
             self.show_route(argv[1:])

@@ -121,6 +121,7 @@ class Context(munge.click.Context):
 
 @click.group()
 @Context.pass_context()
+@click.version_option()
 #@common_options
 def cli(ctx, **kwargs):
     update_context(ctx, kwargs)
