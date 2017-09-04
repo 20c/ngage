@@ -129,7 +129,7 @@ pushing config via a [NAPALM](http://napalm.readthedocs.io/en/latest/) plugin. T
 
 ## Documentation
 
-Documentation is created with mkdocs and available at <http://vaping.readthedocs.io/en/latest/>
+Documentation is created with mkdocs and available at <http://ngage.readthedocs.io/en/latest/>
 
 
 ## License
