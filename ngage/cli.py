@@ -258,7 +258,6 @@ def push(ctx, files, **kwargs):
                 if diff:
                     click.echo(dev.diff())
 
-                dev.check()
                 if check:
                     dev.check()
 
