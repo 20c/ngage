@@ -77,7 +77,8 @@ class EzncDriver(ngage.plugins.DriverPlugin):
         self.dev.cu.unlock()
 
     def _do_commit(self, **kwargs):
-        self.dev.cu.commit()
+        # TODO remove hard timeout
+        self.dev.cu.commit(timeout=90)
 
     def _do_check(self):
         self.dev.cu.commit_check()
