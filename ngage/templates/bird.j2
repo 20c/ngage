@@ -1,0 +1,91 @@
+
+{% for group in bgp.groups -%}
+
+{% if group.local_pref | default(None) %}
+{% set local_pref = group.local_pref %}
+{% endif -%}
+
+{%-     for peer in group.neighbors -%}
+
+{% if peer.tag | default(None) %}
+{% set tag = 'as' + peer.asn|string + '_' + peer.tag %}
+{% else %}
+{% set tag = 'as' + peer.asn|string %}
+{% endif %}
+
+
+{% if peer.local_pref | default(None) %}
+{% set local_pref = peer.local_pref %}
+{% endif -%}
+
+protocol bgp {{ group.name }}_{{tag}} {
+  description "{{group.descr_prefix | default('')}}AS{{peer.asn}} ({{peer.descr}})";
+  local as myasn;
+  neighbor {{peer.ip}} as {{peer.asn}};
+  {% if peer.import | default(0) -%}
+  import {{peer.import}};
+  {% elif group.import | default(0) -%}
+  import {{group.import}};
+  {% endif -%}
+
+  {%- if peer.export | default(0) -%}
+  export {{peer.export}};
+  {% elif group.export | default(0) -%}
+  export {{group.export}};
+  {% endif -%}
+
+  {%- if peer.direct | default(0) %}
+  direct;
+  {% elif group.direct | default(0) -%}
+  direct;
+  {% endif -%}
+
+  {%- if peer.next_hop_self | default(0) %}
+  next hop self;
+  {% elif group.next_hop_self | default(0) -%}
+  next hop self;
+  {% endif -%}
+
+  {%- if peer.local_pref | default(0) -%}
+  default bgp_local_pref {{peer.local_pref}};
+  {% elif group.local_pref | default(0) -%}
+  default bgp_local_pref {{group.local_pref}};
+  {% endif -%}
+
+  {% if peer.max_prefix | default(None) -%}
+  import limit {{peer.max_prefix}};
+  {% endif -%}
+
+  {%- if peer.src_addr | default(None) -%}
+  source address {{peer.src_addr}};
+  {% elif group.src_addr | default(None) -%}
+  source address {{group.src_addr}};
+  {% endif %}
+
+  {%- if peer.multihop | default(0) -%}
+  multihop {{peer.multihop}};
+  {% elif group.multihop | default(0) -%}
+  multihop {{group.multihop}};
+  {% endif -%}
+
+  {%- if peer.med_metric | default(0) -%}
+  med metric {{peer.med_metric}};
+  {% elif group.med_metric | default(0) -%}
+  med metric {{group.med_metric}};
+  {% endif -%}
+
+  {%- if peer.bgp_med | default(0) -%}
+  default bgp_med {{peer.bgp_med}};
+  {% elif group.med_med | default(0) -%}
+  default bgp_med {{group.bgp_med}};
+  {% endif -%}
+
+  {%- if peer.password | default(0) -%}
+  password "{{peer.password}}";
+  {% elif group.password | default(0) -%}
+  password "{{group.password}}";
+  {% endif -%}
+}
+
+{%     endfor %}
+{% endfor %}
