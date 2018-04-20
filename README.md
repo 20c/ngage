@@ -1,11 +1,12 @@
 
 # ngage
 
-[![PyPI version](https://badge.fury.io/py/ngage.svg)](https://badge.fury.io/py/ngage)
-[![Build Status](https://travis-ci.org/20c/ngage.svg?branch=master)](https://travis-ci.org/20c/ngage)
+[![PyPI](https://img.shields.io/pypi/v/ngage.svg?maxAge=3600)](https://pypi.python.org/pypi/ngage)
+[![PyPI](https://img.shields.io/pypi/pyversions/ngage.svg?maxAge=3600)](https://pypi.python.org/pypi/ngage)
+[![Travis CI](https://img.shields.io/travis/20c/ngage.svg?maxAge=3600)](https://travis-ci.org/20c/ngage)
 [![Code Health](https://landscape.io/github/20c/ngage/master/landscape.svg?style=flat)](https://landscape.io/github/20c/ngage/master)
-[![Codecov](https://img.shields.io/codecov/c/github/20c/ngage/master.svg?maxAge=2592000)](https://codecov.io/github/20c/ngage)
-[![Requires.io](https://img.shields.io/requires/github/20c/ngage.svg?maxAge=2592000)](https://requires.io/github/20c/ngage/requirements)
+[![Codecov](https://img.shields.io/codecov/c/github/20c/ngage/master.svg?maxAge=3600)](https://codecov.io/github/20c/ngage)
+[![Requires.io](https://img.shields.io/requires/github/20c/ngage.svg?maxAge=3600)](https://requires.io/github/20c/ngage/requirements)
 
 network gadget config twirler
 
