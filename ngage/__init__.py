@@ -2,7 +2,7 @@
 import pluginmgr
 
 # import to namespace
-from config import Config # noqa
+from ngage.config import Config
 
 
 plugin = pluginmgr.PluginManager('ngage.plugins')

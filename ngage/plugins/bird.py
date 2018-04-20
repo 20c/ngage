@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from builtins import str
 import ngage
 from ngage.exceptions import AuthenticationError, ConfigError
 
@@ -114,9 +115,9 @@ class Driver(ngage.plugins.DriverPlugin):
                 continue
 
             # TODO use inet abstraction
-            addr = ipaddress.ip_address(unicode(peer['address']))
+            addr = ipaddress.ip_address(str(peer['address']))
 
-            row = {v: peer.get(k, None) for k, v in field_map.items()}
+            row = {v: peer.get(k, None) for k, v in list(field_map.items())}
             row['is_enabled'] = True
             row['address_family'] = {
                 'ipv{}'.format(addr.version): {
