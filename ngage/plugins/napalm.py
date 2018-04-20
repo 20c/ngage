@@ -3,13 +3,22 @@ from __future__ import absolute_import
 import ngage
 from ngage.exceptions import AuthenticationError, ConfigError
 
-import napalm_base
-from napalm_base.exceptions import (
-    ConnectionException,
-    ReplaceConfigException,
-    MergeConfigException
-)
+try:
+    from napalm_base import get_network_driver
+    from napalm_base.exceptions import (
+        ConnectionException,
+        ReplaceConfigException,
+        MergeConfigException
+    )
 
+# napalm 2
+except ImportError:
+    from napalm import get_network_driver
+    from napalm.base.exceptions import (
+        ConnectionException,
+        ReplaceConfigException,
+        MergeConfigException
+    )
 
 @ngage.plugin.register('napalm')
 class Driver(ngage.plugins.DriverPlugin):
@@ -27,7 +36,7 @@ class Driver(ngage.plugins.DriverPlugin):
             raise ValueError('napalm requires a subtype')
 
         driver = config['type'].split(':', 2)[1]
-        cls = napalm_base.get_network_driver(driver)
+        cls = get_network_driver(driver)
         self.dev = cls(self.host, self.user, self.password, optional_args=self.optional_args)
 
     def _do_open(self):
