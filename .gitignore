@@ -1,10 +1,13 @@
 *.py[cod]
 *.egg
 *.egg-info
+*.pid
 .cache/
-.coverage
+.coverage*
+.ngage/
+.pytest_cache/
 .tox
 coverage.xml
 dist/
 site/
-.ngage/
+venv/
