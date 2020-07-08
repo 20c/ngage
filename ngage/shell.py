@@ -42,10 +42,10 @@ class BaseShell(Cmd):
         click.echo(msg)
 
     def print_table(self, table):
-        click.echo(tabulate(list(table.items()), tablefmt='plain'))
+        click.echo(tabulate(list(table.items()), tablefmt="plain"))
 
     def print_dict(self, data):
-        codec = munge.get_codec('yaml')()
+        codec = munge.get_codec("yaml")()
         click.echo(codec.dumps(data))
 
     def print_dict_list(self, data):
@@ -59,7 +59,7 @@ class Shell(BaseShell):
         self.ctx = ctx
         self.device = device
         self._peers = None
-        self.prompt = "{}$ ".format(device.config['host'])
+        self.prompt = "{}$ ".format(device.config["host"])
         super().__init__()
 
     # don't repeat command on empty line
@@ -84,26 +84,26 @@ class Shell(BaseShell):
         self.print_dict(self.ctx.config.data)
 
     def print_bgp_summary(self, peers):
-        headers = ['Peer', 'AS', 'Status', 'Active/Accepted/Received/Sent']
+        headers = ["Peer", "AS", "Status", "Active/Accepted/Received/Sent"]
         data = []
         for addr, peer in list(peers.items()):
-            if peer['is_up']:
-                status = click.style('up', fg='green')
+            if peer["is_up"]:
+                status = click.style("up", fg="green")
             else:
-                status = click.style('down', fg='red')
+                status = click.style("down", fg="red")
 
             pcount = Counter()
-            for each in list(peer['address_family'].values()):
+            for each in list(peer["address_family"].values()):
                 pcount += Counter(each)
             routes = "-/{}/{}/{}".format(
-                pcount['accepted_prefixes'],
-                pcount['received_prefixes'],
-                pcount['sent_prefixes'],
-                )
+                pcount["accepted_prefixes"],
+                pcount["received_prefixes"],
+                pcount["sent_prefixes"],
+            )
 
-            data.append([addr, peer['remote_as'], status, routes])
+            data.append([addr, peer["remote_as"], status, routes])
 
-        click.echo(tabulate(data, headers=headers, tablefmt='plain'))
+        click.echo(tabulate(data, headers=headers, tablefmt="plain"))
 
     def peers(self, refresh=False):
         if not self._peers or refresh:
@@ -112,58 +112,59 @@ class Shell(BaseShell):
 
     def print_routes(self, routes):
         self.print_dict_list(routes)
-#    def precmd(self, line):
-#    def completedefault(text, line, begidx, endidx):
+
+    #    def precmd(self, line):
+    #    def completedefault(text, line, begidx, endidx):
 
     def show_bgp(self, argv):
-        keywords = ('peer')
+        keywords = "peer"
         args, kwargs = parse_args(argv, keywords)
 
         if len(args) != 1:
             raise ValueError("show route takes 1 argument")
-        if args[0] == 'summary':
+        if args[0] == "summary":
             neigh = self.peers(refresh=True)
-            self.print_bgp_summary(neigh['peers'])
+            self.print_bgp_summary(neigh["peers"])
 
     def show_config(self, argv):
         config = self.device.pull()
         print(config)
 
     def show_route(self, argv):
-        keywords = ('peer')
+        keywords = "peer"
         args, kwargs = parse_args(argv, keywords)
 
         if len(args):
             if len(args) > 1:
                 raise ValueError("show route takes 1 argument")
-            kwargs['prefix'] = args[0]
+            kwargs["prefix"] = args[0]
 
-        if 'peer' in kwargs:
-            kwargs['peer'] = self.device.lookup_peer(kwargs['peer'])
+        if "peer" in kwargs:
+            kwargs["peer"] = self.device.lookup_peer(kwargs["peer"])
 
         data = self.device.get_routes(**kwargs)
         self.print_routes(data)
 
     def do_show(self, args):
-        argv = args.split(' ')
+        argv = args.split(" ")
 
-        if argv[0] == 'bgp':
+        if argv[0] == "bgp":
             self.show_bgp(argv[1:])
 
-        elif argv[0] == 'config':
+        elif argv[0] == "config":
             self.show_config(argv[1:])
 
-        elif argv[0] == 'route':
+        elif argv[0] == "route":
             self.show_route(argv[1:])
 
-        elif argv[0] == 'interfaces':
+        elif argv[0] == "interfaces":
             intf = self.device.dev.get_interfaces()
             print(intf)
             self.print_table(intf)
         else:
             self.print(f"Unknown command {args}")
 
-        #for each in neigh:
+        # for each in neigh:
         #    print(each)
         #    self.print_table(each)
 

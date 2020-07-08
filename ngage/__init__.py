@@ -4,5 +4,4 @@ import pluginmgr
 from ngage.config import Config
 
 
-plugin = pluginmgr.PluginManager('ngage.plugins')
-
+plugin = pluginmgr.PluginManager("ngage.plugins")
