@@ -1,4 +1,3 @@
-
 from ngage.plugins.eznc import EzncDriver as Driver
 
 import pytest

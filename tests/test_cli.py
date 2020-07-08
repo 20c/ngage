@@ -1,4 +1,3 @@
-
 import ngage.cli
 
 from click.testing import CliRunner

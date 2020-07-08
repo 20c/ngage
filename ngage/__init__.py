@@ -1,4 +1,3 @@
-
 import pluginmgr
 
 # import to namespace

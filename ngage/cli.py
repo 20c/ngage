@@ -1,6 +1,3 @@
-
-
-
 import click
 import fnmatch
 import getpass
@@ -56,7 +53,7 @@ class Context(munge.click.Context):
         return self._logger
 
     def init(self):
-        super(Context, self).init()
+        super().init()
 
         # only print our log messages
         for handler in logging.getLogger().handlers:
@@ -253,7 +250,7 @@ def push(ctx, files, **kwargs):
         # nested try to allow for rollback on push errors
         try:
             for each in files:
-                ctx.log.info("pushing %s" % (each,))
+                ctx.log.info(f"pushing {each}")
                 dev.push(each)
                 if diff:
                     click.echo(dev.diff())
@@ -267,11 +264,11 @@ def push(ctx, files, **kwargs):
             raise
 
         if rollback:
-            ctx.log.info("rollback %s" % (dev.host,))
+            ctx.log.info(f"rollback {dev.host}")
             dev.rollback()
 
         elif commit:
-            ctx.log.info("committing %s" % (dev.host,))
+            ctx.log.info(f"committing {dev.host}")
             dev.commit()
 
     except Exception as e:

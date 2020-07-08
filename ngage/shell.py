@@ -1,5 +1,3 @@
-
-
 import click
 from cmd import Cmd
 from collections import Counter
@@ -26,19 +24,19 @@ def parse_args(arg_list, keywords):
             continue
 
         if each in kwargs:
-            raise ValueError("{} passed more than once".format(each))
+            raise ValueError(f"{each} passed more than once")
 
         try:
             kwargs[each] = next(it)
         except StopIteration:
-            raise ValueError("{} passed without a value".format(each))
+            raise ValueError(f"{each} passed without a value")
 
     return args, kwargs
 
 
-class BaseShell(Cmd, object):
+class BaseShell(Cmd):
     def __init__(self):
-        super(BaseShell, self).__init__()
+        super().__init__()
 
     def print(self, msg=None):
         click.echo(msg)
@@ -62,7 +60,7 @@ class Shell(BaseShell):
         self.device = device
         self._peers = None
         self.prompt = "{}$ ".format(device.config['host'])
-        super(Shell, self).__init__()
+        super().__init__()
 
     # don't repeat command on empty line
     def emptyline(self):
@@ -163,7 +161,7 @@ class Shell(BaseShell):
             print(intf)
             self.print_table(intf)
         else:
-            self.print("Unknown command {}".format(args))
+            self.print(f"Unknown command {args}")
 
         #for each in neigh:
         #    print(each)

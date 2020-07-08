@@ -1,4 +1,3 @@
-
 import os
 import ngage.cli
 import pytest
