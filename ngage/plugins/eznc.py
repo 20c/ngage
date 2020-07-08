@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 import ngage
 from ngage.exceptions import AuthenticationError, ConfigError

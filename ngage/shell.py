@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import click
 from cmd import Cmd
@@ -44,7 +44,7 @@ class BaseShell(Cmd, object):
         click.echo(msg)
 
     def print_table(self, table):
-        click.echo(tabulate(table.items(), tablefmt='plain'))
+        click.echo(tabulate(list(table.items()), tablefmt='plain'))
 
     def print_dict(self, data):
         codec = munge.get_codec('yaml')()
@@ -88,14 +88,14 @@ class Shell(BaseShell):
     def print_bgp_summary(self, peers):
         headers = ['Peer', 'AS', 'Status', 'Active/Accepted/Received/Sent']
         data = []
-        for addr, peer in peers.items():
+        for addr, peer in list(peers.items()):
             if peer['is_up']:
                 status = click.style('up', fg='green')
             else:
                 status = click.style('down', fg='red')
 
             pcount = Counter()
-            for each in peer['address_family'].values():
+            for each in list(peer['address_family'].values()):
                 pcount += Counter(each)
             routes = "-/{}/{}/{}".format(
                 pcount['accepted_prefixes'],

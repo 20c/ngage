@@ -1,5 +1,5 @@
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 
 import click
 import fnmatch
@@ -83,7 +83,7 @@ class Context(munge.click.Context):
             self.get_host_config(target, config)
 
         # overlay kwargs on default and remove them from kwargs
-        for k, v in get_connect_options(kwargs).items():
+        for k, v in list(get_connect_options(kwargs).items()):
             if v:
                 config[k] = v
 
@@ -217,7 +217,7 @@ def pull(ctx, filename, **kwargs):
     dev = ctx.connect(kwargs)
     config = dev.pull()
 
-    with click.open_file(filename, 'w') as fobj:
+    with click.open_file(filename, 'wb') as fobj:
         fobj.write(config)
 
 
