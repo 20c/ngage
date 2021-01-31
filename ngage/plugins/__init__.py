@@ -1,6 +1,6 @@
-from builtins import object
 import inspect
 import logging
+from builtins import object
 
 
 class PluginBase(object):

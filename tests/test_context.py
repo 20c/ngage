@@ -1,7 +1,8 @@
 import os
-import ngage.cli
+
 import pytest
 
+import ngage.cli
 
 this_dir = os.path.dirname(__file__)
 data_dir = os.path.join(this_dir, "data")

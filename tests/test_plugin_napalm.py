@@ -2,7 +2,6 @@ import pytest
 
 import ngage
 
-
 default_config = {"host": "localhost", "type": "napalm:junos"}
 
 

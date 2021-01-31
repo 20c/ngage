@@ -1,9 +1,9 @@
+from jnpr.junos import Device
+from jnpr.junos.exception import ConfigLoadError, ConnectAuthError
+from jnpr.junos.utils.config import Config
+
 import ngage
 from ngage.exceptions import AuthenticationError, ConfigError
-
-from jnpr.junos import Device
-from jnpr.junos.utils.config import Config
-from jnpr.junos.exception import ConfigLoadError, ConnectAuthError
 
 
 @ngage.plugin.register("eznc")

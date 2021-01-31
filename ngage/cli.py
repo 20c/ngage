@@ -1,10 +1,11 @@
-import click
 import fnmatch
 import getpass
 import logging
+import os
+
+import click
 import munge.click
 import munge.util
-import os
 
 import ngage
 import ngage.shell

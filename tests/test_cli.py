@@ -1,8 +1,7 @@
-import ngage.cli
-
-from click.testing import CliRunner
 import pytest
+from click.testing import CliRunner
 
+import ngage.cli
 
 commands = ("commit", "config", "diff", "pull", "push", "rollback")
 

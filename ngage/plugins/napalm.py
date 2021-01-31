@@ -5,8 +5,8 @@ try:
     from napalm_base import get_network_driver
     from napalm_base.exceptions import (
         ConnectionException,
-        ReplaceConfigException,
         MergeConfigException,
+        ReplaceConfigException,
     )
 
 # napalm 2
@@ -14,8 +14,8 @@ except ImportError:
     from napalm import get_network_driver
     from napalm.base.exceptions import (
         ConnectionException,
-        ReplaceConfigException,
         MergeConfigException,
+        ReplaceConfigException,
     )
 
 

@@ -1,8 +1,9 @@
-import click
 from cmd import Cmd
 from collections import Counter
-import munge
 from pprint import pformat
+
+import click
+import munge
 from tabulate import tabulate
 
 

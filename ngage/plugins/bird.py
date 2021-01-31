@@ -1,9 +1,10 @@
+import ipaddress
 from builtins import str
+
+from pybird import PyBird
+
 import ngage
 from ngage.exceptions import AuthenticationError, ConfigError
-
-import ipaddress
-from pybird import PyBird
 
 
 @ngage.plugin.register("bird")
