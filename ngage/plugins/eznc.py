@@ -1,31 +1,32 @@
-from __future__ import absolute_import
+from jnpr.junos import Device
+from jnpr.junos.exception import ConfigLoadError, ConnectAuthError
+from jnpr.junos.utils.config import Config
 
 import ngage
 from ngage.exceptions import AuthenticationError, ConfigError
 
-from jnpr.junos import Device
-from jnpr.junos.utils.config import Config
-from jnpr.junos.exception import ConfigLoadError, ConnectAuthError
 
-
-@ngage.plugin.register('eznc')
+@ngage.plugin.register("eznc")
 class EzncDriver(ngage.plugins.DriverPlugin):
     """
     driver for junos-eznc
         pip install junos-eznc
     """
-    plugin_type = 'eznc'
+
+    plugin_type = "eznc"
 
     def _do_init(self):
         config = self.config
 
-        self.host = config.get('host')
-        self.port = config.get('port', 22)
+        self.host = config.get("host")
+        self.port = config.get("port", 22)
         if not self.port:
             self.port = 22
-        self.user = config.get('user')
-        self.password = config.get('password')
-        self.dev = Device(self.host, port=self.port, user=self.user, password=self.password)
+        self.user = config.get("user")
+        self.password = config.get("password")
+        self.dev = Device(
+            self.host, port=self.port, user=self.user, password=self.password
+        )
 
     def _do_open(self):
         try:
@@ -39,27 +40,25 @@ class EzncDriver(ngage.plugins.DriverPlugin):
         self.dev.close()
 
     def _do_pull(self):
-        options = {
-            'format': 'text'
-        }
+        options = {"format": "text"}
 
         config = self.dev.rpc.get_config(filter_xml=None, options=options)
-        config = config.text.encode('ascii', 'replace')
+        config = config.text.encode("ascii", "replace")
         return config
 
     def _do_push(self, fname, **kwargs):
         try:
-            self.dev.cu.load(path=fname, format='text')
+            self.dev.cu.load(path=fname, format="text")
 
         # bogus exception on warnings
         except ConfigLoadError as e:
             errs = []
             for err in e.errs:
                 # skip warnings
-                if not err['severity'] or err['severity'] == 'warning':
+                if not err["severity"] or err["severity"] == "warning":
                     continue
                 # expand multiple errors split by newlines
-                errs = errs + e.message.split('\n')
+                errs = errs + e.message.split("\n")
 
             if errs:
                 if len(errs) == 1:
@@ -85,4 +84,3 @@ class EzncDriver(ngage.plugins.DriverPlugin):
 
     def _do_rollback(self, index=0):
         self.dev.cu.rollback(index)
-

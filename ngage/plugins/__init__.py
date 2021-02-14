@@ -1,14 +1,13 @@
-
-from builtins import object
 import inspect
 import logging
+from builtins import object
 
 
 class PluginBase(object):
     def __init__(self, config):
         super(PluginBase, self).__init__()
         self.config = config
-        self.log = logging.getLogger('ngage.plugins.' + self.plugin_type)
+        self.log = logging.getLogger("ngage.plugins." + self.plugin_type)
         self.init()
 
     def init(self):
@@ -20,7 +19,7 @@ class DriverPlugin(PluginBase):
         super(DriverPlugin, self).__init__(config)
 
         # base config options
-        self.strict = self.config.get('strict', True)
+        self.strict = self.config.get("strict", True)
 
     def _try_func(self, *args, **kwargs):
         """ tries to call an internal method, fails based on strict config """
@@ -29,8 +28,9 @@ class DriverPlugin(PluginBase):
             call = "_do_" + func
 
             if not hasattr(self, call):
-                raise TypeError("%s is not implemented on type %s"
-                                % (func, self.plugin_type))
+                raise TypeError(
+                    "%s is not implemented on type %s" % (func, self.plugin_type)
+                )
 
             self.log.debug(func)
             return getattr(self, call)(*args, **kwargs)
@@ -41,24 +41,24 @@ class DriverPlugin(PluginBase):
     def init(self):
         return self._try_func()
 
-# public interface ###############################
+    # public interface ###############################
 
     def open(self, **kwargs):
-        'open connection to device'
+        "open connection to device"
         return self._try_func(**kwargs)
 
     def close(self, **kwargs):
-        'close connection to device'
+        "close connection to device"
         return self._try_func(**kwargs)
 
     def lock(self):
-        'lock config for exclusive access'
+        "lock config for exclusive access"
         rv = self._try_func()
         self.locked = True
         return rv
 
     def unlock(self):
-        'unlock config'
+        "unlock config"
         rv = self._try_func()
         self.locked = False
         return rv
@@ -93,7 +93,7 @@ class DriverPlugin(PluginBase):
     def get_routes(self, **kwargs):
         return self._try_func(**kwargs)
 
-# internal interface #############################
+    # internal interface #############################
 
     def _do_init(self):
         pass

@@ -1,4 +1,3 @@
-
 class ConnectionError(IOError):
     pass
 

@@ -1,17 +1,13 @@
-
 import pytest
 
 import ngage
 
+default_config = {"host": "localhost", "type": "napalm:junos"}
 
-default_config = {
-    'host': 'localhost',
-    'type': 'napalm:junos'
-    }
 
 @pytest.fixture()
 def cls():
-    return ngage.plugin.get_plugin_class('napalm')
+    return ngage.plugin.get_plugin_class("napalm")
 
 
 @pytest.fixture()
@@ -25,7 +21,7 @@ def test_init(cls):
 
 def test_init_no_subtype(cls):
     with pytest.raises(ValueError):
-        cls({'type': 'napalm'})
+        cls({"type": "napalm"})
 
 
 def test_notimpl(obj):

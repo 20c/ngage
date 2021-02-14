@@ -1,15 +1,14 @@
+import pytest
 
 from ngage.plugins.eznc import EzncDriver as Driver
-
-import pytest
 
 
 def test_init():
     config = {
-        'host': 'localhost',
-        'user': 'user',
+        "host": "localhost",
+        "user": "user",
     }
-#    with pytest.raises as e:
-#        Driver(config)
+    #    with pytest.raises as e:
+    #        Driver(config)
 
     drv = Driver(config)

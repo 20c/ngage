@@ -1,30 +1,31 @@
-from __future__ import absolute_import
-
+import ipaddress
 from builtins import str
+
+from pybird import PyBird
+
 import ngage
 from ngage.exceptions import AuthenticationError, ConfigError
 
-import ipaddress
-from pybird import PyBird
 
-
-@ngage.plugin.register('bird')
+@ngage.plugin.register("bird")
 class Driver(ngage.plugins.DriverPlugin):
-    plugin_type = 'bird'
+    plugin_type = "bird"
 
     def _do_init(self):
         config = self.config
 
-        self.host = config.get('host')
-        self.user = config.get('user')
-        self.password = config.get('password')
-        self.optional_args = config.get('driver_args', {})
+        self.host = config.get("host")
+        self.user = config.get("user")
+        self.password = config.get("password")
+        self.optional_args = config.get("driver_args", {})
 
-        self.socket_file = self.optional_args.pop('socket_file', None)
+        self.socket_file = self.optional_args.pop("socket_file", None)
         if not self.socket_file:
-            raise ValueError('bird requires socket_file in driver_args')
+            raise ValueError("bird requires socket_file in driver_args")
 
-        self.dev = PyBird(self.socket_file, self.host, self.user, self.password, **self.optional_args)
+        self.dev = PyBird(
+            self.socket_file, self.host, self.user, self.password, **self.optional_args
+        )
 
     def _do_open(self):
         # TODO connection caching
@@ -49,16 +50,16 @@ class Driver(ngage.plugins.DriverPlugin):
     def _do_diff(self, index=0):
         return
         if index != 0:
-            raise NotImplementedError('version index not implemented')
+            raise NotImplementedError("version index not implemented")
         return self.dev.compare_config()
 
     def _do_lock(self):
         pass
-        #self.dev.lock()
+        # self.dev.lock()
 
     def _do_unlock(self):
         pass
-        #self.dev.unlock()
+        # self.dev.unlock()
 
     def _do_commit(self, **kwargs):
         self.dev.commit_config()
@@ -72,65 +73,64 @@ class Driver(ngage.plugins.DriverPlugin):
         elif index == 1:
             self.dev.rollback()
         else:
-            raise NotImplementedError('version index not implemented')
+            raise NotImplementedError("version index not implemented")
 
     def _do_lookup_peer(self, peer):
         # may want to cache this?
         peers = self.dev.get_peer_status()
 
-        if peer.lower().startswith('as'):
+        if peer.lower().startswith("as"):
             for each in peers:
-                if each['asn'] == peer[2:]:
-                    return each['name']
+                if each["asn"] == peer[2:]:
+                    return each["name"]
 
         for each in peers:
-            if each['name'] == peer:
+            if each["name"] == peer:
                 return peer
-            elif each['address'] == peer:
-                    return each['name']
-            elif each['asn'] == peer:
-                    return each['name']
+            elif each["address"] == peer:
+                return each["name"]
+            elif each["asn"] == peer:
+                return each["name"]
 
         raise ValueError("peer {} not found".format(peer))
 
     def _do_get_bgp_neighbors(self):
-        router_id = self.dev.get_bird_status().get('router_id', '')
+        router_id = self.dev.get_bird_status().get("router_id", "")
 
         field_map = {
             # 'local_as'
-            'asn': 'remote_as',
-            'router_id': 'remote_id',
-            'up': 'is_up',
-            'description': 'description',
+            "asn": "remote_as",
+            "router_id": "remote_id",
+            "up": "is_up",
+            "description": "description",
             # 'uptime'
-            }
+        }
 
         rv = {
-            'router_id': router_id,
-            'peers': {},
-            }
+            "router_id": router_id,
+            "peers": {},
+        }
 
         for peer in self.dev.get_peer_status():
-            if peer['protocol'] != 'BGP':
+            if peer["protocol"] != "BGP":
                 continue
 
             # TODO use inet abstraction
-            addr = ipaddress.ip_address(str(peer['address']))
+            addr = ipaddress.ip_address(str(peer["address"]))
 
             row = {v: peer.get(k, None) for k, v in list(field_map.items())}
-            row['is_enabled'] = True
-            row['address_family'] = {
-                'ipv{}'.format(addr.version): {
-                    'received_prefixes': 0,
-                    'accepted_prefixes': peer['routes_imported'],
-                    'sent_prefixes': peer['routes_exported'],
-                    }
+            row["is_enabled"] = True
+            row["address_family"] = {
+                "ipv{}".format(addr.version): {
+                    "received_prefixes": 0,
+                    "accepted_prefixes": peer["routes_imported"],
+                    "sent_prefixes": peer["routes_exported"],
                 }
-            rv['peers'][addr] = row
+            }
+            rv["peers"][addr] = row
 
         return rv
 
     def _do_get_routes(self, **kwargs):
         routes = self.dev.get_routes(**kwargs)
         return routes
-
