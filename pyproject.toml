@@ -1,5 +1,6 @@
 [tool.poetry]
 name = "ngage"
+readme = "README.md"
 version = "0.1.0.2"
 description = "network gadget config twirler"
 authors = ["20C <code@20c.com>"]
