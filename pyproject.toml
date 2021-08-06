@@ -15,6 +15,9 @@ classifiers = [
 		"Topic :: Utilities",
 ]
 
+packages = [
+    { include = "ngage", from = "src" },
+]
 
 [tool.poetry.scripts]
 rdap = "ngage.cli:cli"
@@ -22,9 +25,11 @@ rdap = "ngage.cli:cli"
 [tool.poetry.dependencies]
 python = "^3.6"
 click = "^7"
-pluginmgr = "^1"
+pluginmgr = "^1.0.1"
 munge = "^1"
 tabulate = "^0.8.7"
+napalm = "^3.3.1"
+junos-eznc = "^2.6.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
@@ -34,8 +39,8 @@ codecov = "^2.1.11"
 coverage = "^5.4"
 
 # plugins
-napalm = "^3.2.0"
-junos-eznc = "^2.5.4"
+napalm = "^3.3.1"
+junos-eznc = "^2.6.2"
 
 # linting
 flake8 = "^3.8.4"
