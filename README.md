@@ -1,3 +1,4 @@
+
 # ngage
 
 [![PyPI](https://img.shields.io/pypi/v/ngage.svg?maxAge=3600)](https://pypi.python.org/pypi/ngage)
@@ -8,9 +9,11 @@
 
 network gadget automation glorious environment
 
+
 ## Synopsis
 
 This is a joining of various automation scripts I've used in various places. As I switch things over to use this, I'll merge features and probably change some interfaces. Currently it should be considered a beta script as code is merged and tested. All components are used in production, but obviously the merge process may introduce bugs and growing pains.
+
 
 ## Usage
 
@@ -85,6 +88,7 @@ Options:
   --help                      Show this message and exit.
 ```
 
+
 ### pull
 
 ```
@@ -122,9 +126,11 @@ Useful for debugging, working on device “directly” with a git log.
 By default ngage uses a native Junos client written with eznc, it also suppots
 pushing config via a [NAPALM](http://napalm.readthedocs.io/en/latest/) plugin. To specify a NAPALM driver, use `type=napalm:$driver`, for example `type=napalm:ios`
 
+
 ## Documentation
 
 Documentation is created with mkdocs and available at <http://ngage.readthedocs.io/en/latest/>
+
 
 ## License
 
