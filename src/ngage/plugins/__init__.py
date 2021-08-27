@@ -1,11 +1,10 @@
 import inspect
 import logging
-from builtins import object
 
 
-class PluginBase(object):
+class PluginBase:
     def __init__(self, config):
-        super(PluginBase, self).__init__()
+        super().__init__()
         self.config = config
         self.log = logging.getLogger("ngage.plugins." + self.plugin_type)
         self.init()
@@ -16,21 +15,19 @@ class PluginBase(object):
 
 class DriverPlugin(PluginBase):
     def __init__(self, config):
-        super(DriverPlugin, self).__init__(config)
+        super().__init__(config)
 
         # base config options
         self.strict = self.config.get("strict", True)
 
     def _try_func(self, *args, **kwargs):
-        """ tries to call an internal method, fails based on strict config """
+        """tries to call an internal method, fails based on strict config"""
         try:
             func = inspect.currentframe().f_back.f_code.co_name
             call = "_do_" + func
 
             if not hasattr(self, call):
-                raise TypeError(
-                    "%s is not implemented on type %s" % (func, self.plugin_type)
-                )
+                raise TypeError(f"{func} is not implemented on type {self.plugin_type}")
 
             self.log.debug(func)
             return getattr(self, call)(*args, **kwargs)
@@ -64,11 +61,11 @@ class DriverPlugin(PluginBase):
         return rv
 
     def pull(self):
-        """ pull config from device """
+        """pull config from device"""
         return self._try_func()
 
     def push(self, fname, **kwargs):
-        """ push config from device """
+        """push config from device"""
         self.log.debug("push %s..." % fname)
         self._do_push(fname, **kwargs)
 
@@ -111,11 +108,11 @@ class DriverPlugin(PluginBase):
         raise NotImplementedError
 
     def _do_pull(self):
-        """ internal method to pull a config file from a device """
+        """internal method to pull a config file from a device"""
         raise NotImplementedError
 
     def _do_push(self, fname, **kwawgs):
-        """ internal method to push a single config file to a device """
+        """internal method to push a single config file to a device"""
         raise NotImplementedError
 
     def _do_diff(self, index=0):

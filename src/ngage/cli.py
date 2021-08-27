@@ -32,7 +32,7 @@ get_connect_options = make_get_options("host", "port", "type", "user", "password
 
 
 def update_context(ctx, kwargs):
-    """ updates context from current command line args, then reinits """
+    """updates context from current command line args, then reinits"""
     ctx.update_options(kwargs)
 
     if not isinstance(ctx.config["ngage"]["plugin_path"], list):
@@ -136,7 +136,7 @@ def cli(ctx, **kwargs):
     default=False,
 )
 def config(ctx, **kwargs):
-    """ view and interact with the config """
+    """view and interact with the config"""
     update_context(ctx, kwargs)
 
     meta = ctx.config.meta
@@ -167,7 +167,7 @@ def config(ctx, **kwargs):
 )
 @click.option("--diff/--no-diff", help="show diff of changes", default=False)
 def commit(ctx, **kwargs):
-    """ commit changes on a device """
+    """commit changes on a device"""
     update_context(ctx, kwargs)
     dev = ctx.connect(kwargs)
 
@@ -185,7 +185,7 @@ def commit(ctx, **kwargs):
 @connect_options
 @click.option("--index", help="rollback index", default=0)
 def diff(ctx, **kwargs):
-    """ get diff from device """
+    """get diff from device"""
     update_context(ctx, kwargs)
     dev = ctx.connect(kwargs)
 
@@ -198,7 +198,7 @@ def diff(ctx, **kwargs):
 @connect_options
 @click.option("--index", help="rollback index", default=0)
 def rollback(ctx, **kwargs):
-    """ rollback device config """
+    """rollback device config"""
     update_context(ctx, kwargs)
     dev = ctx.connect(kwargs)
 
@@ -216,7 +216,7 @@ def rollback(ctx, **kwargs):
 )
 @click.argument("filename", default="-")
 def pull(ctx, filename, **kwargs):
-    """ pull config from a device """
+    """pull config from a device"""
     # set filename before kwargs get mangled
     if filename != "-":
         filename = filename.format(**kwargs)
@@ -244,7 +244,7 @@ def pull(ctx, filename, **kwargs):
 )
 @click.argument("files", nargs=-1)
 def push(ctx, files, **kwargs):
-    """ push config to a device """
+    """push config to a device"""
     update_context(ctx, kwargs)
     dev = ctx.connect(kwargs)
 

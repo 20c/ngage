@@ -5,6 +5,7 @@
 [![PyPI](https://img.shields.io/pypi/pyversions/ngage.svg?maxAge=3600)](https://pypi.python.org/pypi/ngage)
 [![Tests](https://github.com/20c/ngage/workflows/tests/badge.svg)](https://github.com/20c/ngage)
 [![Codecov](https://img.shields.io/codecov/c/github/20c/ngage/master.svg?maxAge=3600)](https://codecov.io/github/20c/ngage)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/20c/ngage.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/20c/ngage/context:python)
 
 network gadget automation glorious environment
 
