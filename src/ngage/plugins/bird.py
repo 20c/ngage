@@ -1,5 +1,4 @@
 import ipaddress
-from builtins import str
 
 from pybird import PyBird
 
@@ -92,7 +91,7 @@ class Driver(ngage.plugins.DriverPlugin):
             elif each["asn"] == peer:
                 return each["name"]
 
-        raise ValueError("peer {} not found".format(peer))
+        raise ValueError(f"peer {peer} not found")
 
     def _do_get_bgp_neighbors(self):
         router_id = self.dev.get_bird_status().get("router_id", "")
@@ -121,7 +120,7 @@ class Driver(ngage.plugins.DriverPlugin):
             row = {v: peer.get(k, None) for k, v in list(field_map.items())}
             row["is_enabled"] = True
             row["address_family"] = {
-                "ipv{}".format(addr.version): {
+                f"ipv{addr.version}": {
                     "received_prefixes": 0,
                     "accepted_prefixes": peer["routes_imported"],
                     "sent_prefixes": peer["routes_exported"],

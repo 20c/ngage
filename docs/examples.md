@@ -5,7 +5,7 @@ These scripts, located in the `scripts/` directory, assume all config snippets a
 
 ```
 $ ls -la gen/chix0.ch2/
-    
+
 00-basesys.conf
 01-chassis.conf
 03-interfaces.conf

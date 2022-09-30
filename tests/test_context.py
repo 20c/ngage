@@ -19,7 +19,7 @@ host_tst2 = "tst2.example.com"
 
 
 def hkwa(host):
-    """ make kwargs for host """
+    """make kwargs for host"""
     return dict(
         host=host,
         #        user='test'
