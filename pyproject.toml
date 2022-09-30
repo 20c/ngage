@@ -5,7 +5,7 @@ version = "0.1.0.2"
 description = "network gadget config twirler"
 authors = ["20C <code@20c.com>"]
 
-repository = "https://github.com/20c/rdap"
+repository = "https://github.com/20c/ngage"
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -23,42 +23,42 @@ packages = [
 ngage = "ngage.cli:cli"
 
 [tool.poetry.dependencies]
-python = "^3.6.2"
-click = "^7"
+python = "^3.7"
+click = ">=7"
 pluginmgr = "^1"
 munge = "^1"
 tabulate = "^0.8.7"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.2"
-tox = "^3.21.3"
-pytest-cov = "^2.11.1"
-codecov = "^2.1.11"
-coverage = "^5.4"
-
-# plugins
-junos-eznc = ">=1.3.1,<3"
-napalm = ">=1.1.0,<3"
+# testing
+codecov = ">=2"
+coverage = ">=5"
+pytest = ">=6"
+pytest-django = ">=3.8"
+pytest-cov = "*"
 
 # linting
-# bandit = "^1.6.2"
-black = { version = ">=20", allow-prereleases = true }
-isort = "^5.7.0"
-flake8 = "^3.8.4"
-mypy = "^0.812"
-pre-commit = "^2.13"
-pyupgrade = "^2.19.4"
+# bandit = ">=1.6.2"
+black = ">=20"
+isort = ">=5.7"
+flake8 = ">=3.8"
+mypy = ">=0.950"
+pre-commit = ">=2.13"
+pyupgrade = ">=2.19"
 
 # docs
 markdown = "*"
 markdown-include = ">=0.5,<1"
-mkdocs = "^1"
+mkdocs = "^1.2.3"
 
 # ctl
-ctl = "^1"
-jinja2 = "^2.11.2"
-tmpl = "^1"
-twine = "^3.3.0"
+ctl = ">=1"
+jinja2 = ">=2"
+tmpl = ">=1"
+
+# plugins
+junos-eznc = ">=1.3.1,<3"
+napalm = ">=1.1.0,<3"
 
 [tool.poetry.plugins."markdown.extensions"]
 pymdgen = "pymdgen.md:Extension"
